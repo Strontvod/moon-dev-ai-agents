@@ -47,11 +47,11 @@ TOKEN_EXCHANGE_MAP = {
 
 # Token and wallet settings
 symbol = '9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump'
-address = '4wgfCBf2WwLSRKLef9iW7JXZ2AfkxUxGM4XcKpHm3Sin' # YOUR WALLET ADDRESS HERE
+address = '0x4B23667D0395A257c8cD1Ddd9399039AF00e66b2' # Hyperliquid EVM wallet
 
 # Position sizing 🎯
-usd_size = 25  # Size of position to hold
-max_usd_order_size = 3  # Max order size
+usd_size = 10  # Size of position to hold 🌙 conservative for first run
+max_usd_order_size = 5  # Max order size
 tx_sleep = 30  # Sleep between transactions
 slippage = 199  # Slippage settings
 
@@ -74,7 +74,7 @@ MAX_LOSS_USD = 10   # Maximum loss in USD before stopping trading  🌙 conserva
 MAX_GAIN_USD = 50   # Maximum gain in USD before stopping trading
 
 # USD MINIMUM BALANCE RISK CONTROL
-MINIMUM_BALANCE_USD = 50  # If balance falls below this, risk agent will consider closing all positions
+MINIMUM_BALANCE_USD = 30  # If balance falls below this, risk agent will consider closing all positions
 USE_AI_CONFIRMATION = True  # If True, consult AI before closing positions. If False, close immediately on breach
 
 # Percentage-based limits (used if USE_PERCENTAGE is True)

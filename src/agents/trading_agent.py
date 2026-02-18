@@ -124,7 +124,7 @@ MAX_POSITION_PERCENTAGE = 90     # % of account balance to use as MARGIN per pos
                                  # - SOLANA: Uses % of USDC balance directly (no leverage)
                                  #   Example: 100 USDC, 90% = 90 USDC position
 
-LEVERAGE = 9                    # Leverage multiplier (1-125x on Aster/HyperLiquid)
+LEVERAGE = 3                    # Leverage multiplier (1-125x on Aster/HyperLiquid) 🌙 start conservative
                                  # Higher leverage = bigger position with same margin, higher liquidation risk
                                  # Examples with $100 margin:
                                  #           5x = $100 margin → $500 notional position
