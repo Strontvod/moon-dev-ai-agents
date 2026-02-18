@@ -4,7 +4,7 @@ Built with love by Moon Dev 🚀
 """
 
 # 🔄 Exchange Selection
-EXCHANGE = 'solana'  # Options: 'solana', 'hyperliquid'
+EXCHANGE = 'hyperliquid'  # Options: 'solana', 'hyperliquid'
 
 # 💰 Trading Configuration
 USDC_ADDRESS = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"  # Never trade or close
@@ -70,8 +70,8 @@ SLEEP_BETWEEN_RUNS_MINUTES = 15  # How long to sleep between agent runs 🕒
 USE_PERCENTAGE = False  # If True, use percentage-based limits. If False, use USD-based limits
 
 # USD-based limits (used if USE_PERCENTAGE is False)
-MAX_LOSS_USD = 25  # Maximum loss in USD before stopping trading
-MAX_GAIN_USD = 25 # Maximum gain in USD before stopping trading
+MAX_LOSS_USD = 10   # Maximum loss in USD before stopping trading  🌙 conservative for first run
+MAX_GAIN_USD = 50   # Maximum gain in USD before stopping trading
 
 # USD MINIMUM BALANCE RISK CONTROL
 MINIMUM_BALANCE_USD = 50  # If balance falls below this, risk agent will consider closing all positions
