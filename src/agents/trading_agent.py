@@ -87,7 +87,7 @@ EXCHANGE = "HYPERLIQUID"  # Options: "ASTER", "HYPERLIQUID", "SOLANA"
                           # - "SOLANA" = Solana on-chain DEX (long only)
 
 # 🌊 AI MODE SELECTION
-USE_SWARM_MODE = False  # True = 6-model swarm consensus (~45-60s per token)
+USE_SWARM_MODE = True   # True = multi-model swarm consensus 🌙 better signals
                         # False = Single model fast execution (~10s per token)
 
 # 📈 TRADING MODE SETTINGS

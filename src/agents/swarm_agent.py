@@ -60,14 +60,15 @@ from src.models.model_factory import model_factory
 
 # Configure which models to use in the swarm (set to True to enable)
 SWARM_MODELS = {
-    # 🌙 Moon Dev's Active Swarm Models - 3 Model Configuration
-    "deepseek": (True, "deepseek", "deepseek-chat"),  # DeepSeek Chat - Fast chat model (API)
-    "xai": (True, "xai", "grok-4-fast-reasoning"),  # Grok-4 fast reasoning ($0.20-$0.50/1M tokens)
-    "openrouter_qwen": (True, "openrouter", "qwen/qwen3-max"),  # Qwen 3 Max - Powerful reasoning ($1.00/$1.00 per 1M tokens)
+    # 🌙 Active Swarm — Claude + GPT + DeepSeek (3 diverse models you have keys for)
+    "claude":    (True, "claude",    "claude-sonnet-4-5"),  # 🌙 Claude — best reasoning
+    "openai":    (True, "openai",    "gpt-4o"),             # 🤖 GPT-4o — strong & fast
+    "deepseek":  (True, "deepseek",  "deepseek-chat"),      # 💰 DeepSeek — cheap + solid
 
-    # 🔇 Disabled Models (uncomment to enable)
-    #"claude": (True, "claude", "claude-sonnet-4-5"),  # Claude 4.5 Sonnet - Latest & Greatest!
-    #"openai": (True, "openai", "gpt-5"),  # GPT-5 - Most advanced model!
+    # 🔇 Disabled (need XAI_API_KEY / OPENROUTER_KEY to enable)
+    #"xai": (True, "xai", "grok-4-fast-reasoning"),
+    #"openrouter_qwen": (True, "openrouter", "qwen/qwen3-max"),
+    #"openai": (True, "openai", "gpt-5"),  # GPT-5 — upgrade when available
     #"ollama_qwen": (True, "ollama", "qwen3:8b"),  # Qwen3 8B via Ollama - Fast local reasoning!
     #"ollama": (True, "ollama", "DeepSeek-R1:latest"),  # DeepSeek-R1 local model via Ollama
     #"openrouter_qwen": (True, "openrouter", "qwen/qwen3-max"),  # Qwen 3 Max - Powerful reasoning ($1.00/$1.00 per 1M tokens)

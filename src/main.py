@@ -28,8 +28,8 @@ load_dotenv()
 # Agent Configuration
 ACTIVE_AGENTS = {
     'risk': True,       # Risk management agent  🌙 ON - always runs first
-    'trading': False,   # LLM trading agent      ← enable when ready to trade live
-    'strategy': False,  # Strategy-based trading agent
+    'trading': True,    # LLM trading agent      🌙 ON - Hyperliquid execution
+    'strategy': True,   # Strategy-based trading agent 🌙 ON - signal layer
     'copybot': False,   # CopyBot agent
     'sentiment': False, # Run sentiment_agent.py directly instead
     # whale_agent is run from whale_agent.py
