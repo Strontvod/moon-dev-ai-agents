@@ -79,6 +79,10 @@ RESTREAM_CLIENT_SECRET=...
 
 ## ✅ Minimal Config to Get Started
 
+> 💡 **Moon Dev tip:** BirdEye can get expensive. Use `nice_funcs_free.py` instead
+> of `nice_funcs.py` for Solana agents — it uses DexScreener (free, no key) for
+> `token_price()` and `token_overview()`. Just swap the import.
+
 For a first run (backtesting + risk + trading on Hyperliquid), you only need:
 
 ```env
@@ -88,11 +92,11 @@ For a first run (backtesting + risk + trading on Hyperliquid), you only need:
 ANTHROPIC_KEY=sk-ant-...
 DEEPSEEK_KEY=sk-...
 
-# Market data (required for analysis agents)
-BIRDEYE_API_KEY=...
-
 # Exchange (pick one)
 HYPER_LIQUID_ETH_PRIVATE_KEY=0x...
+
+# BirdEye — OPTIONAL if using nice_funcs_free.py for Solana
+# BIRDEYE_API_KEY=...
 
 # Moon Dev API (optional but unlocks liquidation + OI data)
 MOONDEV_API_KEY=...
