@@ -49,7 +49,18 @@ from termcolor import colored, cprint
 from dotenv import load_dotenv
 import openai
 from src import config
-from src import nice_funcs as n
+from src.config import EXCHANGE
+
+# 🏦 Dynamic exchange import — mirrors trading_agent pattern
+if EXCHANGE == 'hyperliquid':
+    from src import nice_funcs_hyperliquid as n
+    cprint("🏦 Risk Agent: Using HyperLiquid", "cyan", attrs=['bold'])
+elif EXCHANGE == 'solana':
+    from src import nice_funcs as n
+    cprint("🏦 Risk Agent: Using Solana", "cyan", attrs=['bold'])
+else:
+    from src import nice_funcs as n  # fallback
+
 from src.data.ohlcv_collector import collect_all_tokens
 from datetime import datetime, timedelta
 import time
@@ -121,39 +132,43 @@ class RiskAgent(BaseAgent):
         
         try:
             print("\n🔍 Moon Dev's Portfolio Value Calculator Starting... 🚀")
-            
-            # Get USDC balance first
-            print("💵 Getting USDC balance...")
-            try:
-                print(f"🔍 Checking USDC balance for address: {config.USDC_ADDRESS}")
-                usdc_value = n.get_token_balance_usd(config.USDC_ADDRESS)
-                print(f"✅ USDC Value: ${usdc_value:.2f}")
-                total_value += usdc_value
-            except Exception as e:
-                print(f"❌ Error getting USDC balance: {str(e)}")
-                print(f"🔍 Debug info - USDC Address: {config.USDC_ADDRESS}")
-                traceback.print_exc()
-            
-            # Get balance of each monitored token
-            print("\n📊 Getting monitored token balances...")
-            print(f"🎯 Total tokens to check: {len(config.MONITORED_TOKENS)}")
-            print(f"📝 Token list: {config.MONITORED_TOKENS}")
-            
-            for token in config.MONITORED_TOKENS:
-                if token != config.USDC_ADDRESS:  # Skip USDC as we already counted it
-                    try:
-                        print(f"\n🪙 Checking token: {token[:8]}...")
-                        token_value = n.get_token_balance_usd(token)
-                        if token_value > 0:
-                            print(f"💰 Found position worth: ${token_value:.2f}")
-                            total_value += token_value
-                        else:
-                            print("ℹ️ No balance found for this token")
-                    except Exception as e:
-                        print(f"❌ Error getting balance for {token[:8]}: {str(e)}")
-                        print("🔍 Full error trace:")
-                        traceback.print_exc()
-            
+
+            # ── HyperLiquid balance ───────────────────────────────────────────
+            if EXCHANGE == 'hyperliquid':
+                try:
+                    account = n._get_account_from_env()
+                    total_value = n.get_account_value(account)
+                    print(f"✅ HyperLiquid Account Value: ${total_value:.2f}")
+                except Exception as e:
+                    print(f"❌ Error getting HyperLiquid balance: {str(e)}")
+                    traceback.print_exc()
+
+            # ── Solana / BirdEye balance ──────────────────────────────────────
+            else:
+                # Get USDC balance first
+                print("💵 Getting USDC balance...")
+                try:
+                    print(f"🔍 Checking USDC balance for address: {config.USDC_ADDRESS}")
+                    usdc_value = n.get_token_balance_usd(config.USDC_ADDRESS)
+                    print(f"✅ USDC Value: ${usdc_value:.2f}")
+                    total_value += usdc_value
+                except Exception as e:
+                    print(f"❌ Error getting USDC balance: {str(e)}")
+                    traceback.print_exc()
+
+                # Get balance of each monitored token
+                print("\n📊 Getting monitored token balances...")
+                for token in config.MONITORED_TOKENS:
+                    if token != config.USDC_ADDRESS:
+                        try:
+                            token_value = n.get_token_balance_usd(token)
+                            if token_value > 0:
+                                print(f"💰 Found position worth: ${token_value:.2f}")
+                                total_value += token_value
+                        except Exception as e:
+                            print(f"❌ Error getting balance for {token[:8]}: {str(e)}")
+                            traceback.print_exc()
+
             print(f"\n💎 Moon Dev's Total Portfolio Value: ${total_value:.2f} 🌙")
             return total_value
             
