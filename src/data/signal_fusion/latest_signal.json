@@ -1,0 +1,13 @@
+{
+  "score": 0.0,
+  "direction": "NEUTRAL",
+  "confidence": 0.0,
+  "sources": {
+    "sentiment": null,
+    "funding": null,
+    "oi": null,
+    "liquidation": null
+  },
+  "timestamp": "2026-02-18T15:39:00.646983+00:00",
+  "active_sources": 0
+}
