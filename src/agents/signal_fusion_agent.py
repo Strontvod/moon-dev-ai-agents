@@ -22,7 +22,7 @@ import json
 import csv
 import pandas as pd
 import numpy as np
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from termcolor import cprint
 
@@ -57,8 +57,13 @@ MAX_DATA_AGE_HOURS = 2
 
 def _is_fresh(ts: pd.Timestamp) -> bool:
     """Check if a timestamp is within MAX_DATA_AGE_HOURS."""
-    cutoff = datetime.utcnow() - timedelta(hours=MAX_DATA_AGE_HOURS)
+    cutoff = datetime.now() - timedelta(hours=MAX_DATA_AGE_HOURS)
     return ts.to_pydatetime().replace(tzinfo=None) >= cutoff
+
+
+def _cutoff() -> pd.Timestamp:
+    """Return a timezone-naive cutoff timestamp for CSV comparisons."""
+    return pd.Timestamp.now() - pd.Timedelta(hours=MAX_DATA_AGE_HOURS)
 
 
 def read_sentiment_signal() -> float | None:
@@ -70,7 +75,7 @@ def read_sentiment_signal() -> float | None:
         df = pd.read_csv(SENTIMENT_CSV)
         df['timestamp'] = pd.to_datetime(df['timestamp'])
         df = df.sort_values('timestamp')
-        recent = df[df['timestamp'] >= pd.Timestamp.utcnow() - pd.Timedelta(hours=MAX_DATA_AGE_HOURS)]
+        recent = df[df['timestamp'] >= pd.Timestamp.now() - pd.Timedelta(hours=MAX_DATA_AGE_HOURS)]
         if recent.empty:
             cprint("⚠️  Sentiment data stale or missing", "yellow")
             return None
@@ -95,7 +100,7 @@ def read_funding_signal() -> float | None:
         df = pd.read_csv(FUNDING_CSV)
         df['timestamp'] = pd.to_datetime(df['timestamp'])
         df = df.sort_values('timestamp')
-        recent = df[df['timestamp'] >= pd.Timestamp.utcnow() - pd.Timedelta(hours=MAX_DATA_AGE_HOURS)]
+        recent = df[df['timestamp'] >= pd.Timestamp.now() - pd.Timedelta(hours=MAX_DATA_AGE_HOURS)]
         if recent.empty:
             cprint("⚠️  Funding data stale or missing", "yellow")
             return None
@@ -138,7 +143,7 @@ def read_oi_signal() -> float | None:
         df = pd.read_csv(OI_CSV)
         df['timestamp'] = pd.to_datetime(df['timestamp'])
         df = df.sort_values('timestamp')
-        recent = df[df['timestamp'] >= pd.Timestamp.utcnow() - pd.Timedelta(hours=MAX_DATA_AGE_HOURS)]
+        recent = df[df['timestamp'] >= pd.Timestamp.now() - pd.Timedelta(hours=MAX_DATA_AGE_HOURS)]
         if recent.empty:
             cprint("⚠️  OI data stale or missing", "yellow")
             return None
@@ -166,7 +171,7 @@ def read_liquidation_signal() -> float | None:
         df = pd.read_csv(LIQUIDATION_CSV)
         df['timestamp'] = pd.to_datetime(df['timestamp'])
         df = df.sort_values('timestamp')
-        recent = df[df['timestamp'] >= pd.Timestamp.utcnow() - pd.Timedelta(hours=MAX_DATA_AGE_HOURS)]
+        recent = df[df['timestamp'] >= pd.Timestamp.now() - pd.Timedelta(hours=MAX_DATA_AGE_HOURS)]
         if recent.empty:
             cprint("⚠️  Liquidation data stale or missing", "yellow")
             return None
@@ -227,7 +232,7 @@ def get_fused_signal(verbose: bool = True) -> dict:
             "direction": "NEUTRAL",
             "confidence": 0.0,
             "sources": raw,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "active_sources": 0,
         }
         _save(result)
@@ -263,7 +268,7 @@ def get_fused_signal(verbose: bool = True) -> dict:
         "direction":      direction,
         "confidence":     confidence,
         "sources":        raw,
-        "timestamp":      datetime.utcnow().isoformat(),
+        "timestamp":      datetime.now(timezone.utc).isoformat(),
         "active_sources": active_count,
     }
 

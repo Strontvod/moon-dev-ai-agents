@@ -61,8 +61,9 @@ if (Test-Path $reqFile) {
     Ok "Requirements satisfied"
 }
 
-# ─── Set working directory ────────────────────────────────
+# ─── Set working directory & PYTHONPATH ──────────────────
 Set-Location $RepoRoot
+$env:PYTHONPATH = $RepoRoot   # Needed so `from src import ...` works
 
 # ─── Agent selector ───────────────────────────────────────
 $agentMap = @{
