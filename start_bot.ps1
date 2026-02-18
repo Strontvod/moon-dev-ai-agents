@@ -47,9 +47,11 @@ if (-not (Test-Path $envFile)) {
     if ($continue -ne "y") { exit 1 }
 }
 
-# Set working directory and PYTHONPATH
+# Set working directory, PYTHONPATH, and UTF-8 encoding (fixes Windows emoji issues)
 Set-Location $RepoRoot
-$env:PYTHONPATH = $RepoRoot
+$env:PYTHONPATH  = $RepoRoot
+$env:PYTHONUTF8  = "1"
+$env:PYTHONIOENCODING = "utf-8"
 
 # Agent selector
 $agentMap = @{
