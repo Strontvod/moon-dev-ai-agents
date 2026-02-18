@@ -28,7 +28,8 @@ load_dotenv()
 # Get API keys from environment
 BIRDEYE_API_KEY = os.getenv("BIRDEYE_API_KEY")
 if not BIRDEYE_API_KEY:
-    raise ValueError("🚨 BIRDEYE_API_KEY not found in environment variables!")
+    cprint("⚠️  BIRDEYE_API_KEY not set — Solana token data unavailable (OK if using Hyperliquid)", "yellow")
+    BIRDEYE_API_KEY = ""  # Non-fatal: Hyperliquid users don't need BirdEye
 
 sample_address = "2yXTyarttn2pTZ6cwt4DqmrRuBw1G7pmFv9oT6MStdKP"
 
