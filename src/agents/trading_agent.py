@@ -87,7 +87,7 @@ EXCHANGE = "HYPERLIQUID"  # Options: "ASTER", "HYPERLIQUID", "SOLANA"
                           # - "SOLANA" = Solana on-chain DEX (long only)
 
 # 🌊 AI MODE SELECTION
-USE_SWARM_MODE = True   # True = multi-model swarm consensus 🌙 better signals
+USE_SWARM_MODE = False  # True = multi-model swarm consensus 🌙 better signals
                         # False = Single model fast execution (~10s per token)
 
 # 📈 TRADING MODE SETTINGS
@@ -107,8 +107,8 @@ LONG_ONLY = True  # True = Long positions only (works on all exchanges)
                   # Note: Solana is always LONG_ONLY (exchange limitation)
 
 # 🤖 SINGLE MODEL SETTINGS (only used when USE_SWARM_MODE = False)
-AI_MODEL_TYPE = 'anthropic'  # Options: 'groq', 'openai', 'claude', 'deepseek', 'xai', 'ollama'
-AI_MODEL_NAME = None   # None = use default, or specify: 'grok-4-fast-reasoning', 'claude-3-5-sonnet-latest', etc.
+AI_MODEL_TYPE = 'claude'     # Options: 'groq', 'openai', 'claude', 'deepseek', 'xai', 'ollama'
+AI_MODEL_NAME = 'claude-sonnet-4-6'  # Latest Claude Sonnet 4.6
 AI_TEMPERATURE = 0.7   # Creativity vs precision (0-1)
 AI_MAX_TOKENS = 1024   # Max tokens for AI response
 
@@ -712,9 +712,14 @@ Strategy Signals Available:
                 confidence = 0
                 for line in lines:
                     if 'confidence' in line.lower():
-                        # Extract number from string like "Confidence: 75%"
+                        # Extract first number from string like "Confidence: 75%" or "Confidence: 67.4%"
                         try:
-                            confidence = int(''.join(filter(str.isdigit, line)))
+                            import re
+                            match = re.search(r'\b(\d+(?:\.\d+)?)\s*%?', line)
+                            if match:
+                                confidence = min(100, int(float(match.group(1))))
+                            else:
+                                confidence = 50
                         except:
                             confidence = 50  # Default if not found
 
