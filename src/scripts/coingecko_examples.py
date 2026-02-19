@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 
 # Load environment variables
-load_dotenv()
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
 # Configuration
 COINGECKO_API_KEY = os.getenv("COINGECKO_API_KEY")

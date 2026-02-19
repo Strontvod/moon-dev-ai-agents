@@ -19,7 +19,7 @@ init(autoreset=True)
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 # Load environment variables
-load_dotenv()
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
 def print_banner():
     """Print Moon Dev banner"""

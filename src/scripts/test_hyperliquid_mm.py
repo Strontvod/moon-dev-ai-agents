@@ -27,7 +27,7 @@ import colorama
 colorama.init(autoreset=True)
 
 # Load environment variables
-load_dotenv()
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
 # Get HyperLiquid key from environment
 HYPER_LIQUID_KEY = os.getenv('HYPER_LIQUID_KEY')

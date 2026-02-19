@@ -16,7 +16,7 @@ import eth_account
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Load environment
-load_dotenv()
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
 # Import BOTH trading functions
 import nice_funcs as solana  # Solana spot trading

@@ -35,7 +35,7 @@ except ImportError as e:
     sys.exit(1)
 
 # Load environment variables
-load_dotenv()
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
 # Get API keys
 ASTER_API_KEY = os.getenv('ASTER_API_KEY')

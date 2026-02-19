@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 from termcolor import colored, cprint
 
 # Load environment variables
-load_dotenv()
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
 # ⚙️ Configuration Constants
 HOURS_BETWEEN_RUNS = 24

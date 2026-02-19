@@ -54,7 +54,7 @@ with open(os.path.join(project_root, "src/models/groq_model.py"), 'r') as f:
 GroqModel = groq_module.GroqModel
 
 # Load environment variables
-load_dotenv()
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
 def test_qwen_model():
     """Test the Qwen3-32B model"""

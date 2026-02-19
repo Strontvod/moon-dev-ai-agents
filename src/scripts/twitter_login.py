@@ -61,7 +61,7 @@ from termcolor import cprint
 from dotenv import load_dotenv
 
 # Load environment variables
-load_dotenv()
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
 async def main():
     try:
