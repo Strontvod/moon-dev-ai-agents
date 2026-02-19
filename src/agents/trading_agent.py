@@ -108,15 +108,15 @@ LONG_ONLY = True  # True = Long positions only (works on all exchanges)
 
 # 🤖 SINGLE MODEL SETTINGS (only used when USE_SWARM_MODE = False)
 AI_MODEL_TYPE = 'claude'     # Options: 'groq', 'openai', 'claude', 'deepseek', 'xai', 'ollama'
-AI_MODEL_NAME = 'claude-sonnet-4-6'  # Latest Claude Sonnet 4.6
+AI_MODEL_NAME = 'claude-haiku-4-5-20251001'  # Haiku: ~10x cheaper than Sonnet, fast decisions
 AI_TEMPERATURE = 0.7   # Creativity vs precision (0-1)
-AI_MAX_TOKENS = 1024   # Max tokens for AI response
+AI_MAX_TOKENS = 300    # Trading only needs Buy/Sell/Nothing + brief reason
 
 # 💰 POSITION SIZING & RISK MANAGEMENT
 USE_PORTFOLIO_ALLOCATION = False # True = Use AI for portfolio allocation across multiple tokens
                                  # False = Simple mode - trade single token at MAX_POSITION_PERCENTAGE
 
-MAX_POSITION_PERCENTAGE = 90     # % of account balance to use as MARGIN per position (0-100)
+MAX_POSITION_PERCENTAGE = 25     # % of account balance to use as MARGIN per position 🌙 safe start
                                  # How it works per exchange:
                                  # - ASTER/HYPERLIQUID: % of balance used as MARGIN (then multiplied by leverage)
                                  #   Example: $100 balance, 90% = $90 margin
@@ -142,15 +142,14 @@ usd_size = 25                    # [DEPRECATED] Use MAX_POSITION_PERCENTAGE inst
 max_usd_order_size = 3           # Maximum order chunk size in USD (for Solana chunking)
 
 # 📊 MARKET DATA COLLECTION
-DAYSBACK_4_DATA = 3              # Days of historical data to fetch
+DAYSBACK_4_DATA = 1              # Days of historical data to fetch (1 day = 24 bars @ 1H)
 DATA_TIMEFRAME = '1H'            # Bar timeframe: 1m, 3m, 5m, 15m, 30m, 1H, 2H, 4H, 6H, 8H, 12H, 1D, 3D, 1W, 1M
-                                 # Current: 3 days @ 1H = ~72 bars
-                                 # For 15-min: '15m' = ~288 bars
+                                 # Current: 1 day @ 1H = ~24 bars (was 72 — saves ~65% context)
 SAVE_OHLCV_DATA = False          # True = save data permanently, False = temp data only
 
 # ⚡ TRADING EXECUTION SETTINGS
 slippage = 199                   # Slippage tolerance (199 = ~2%)
-SLEEP_BETWEEN_RUNS_MINUTES = 15  # Minutes between trading cycles
+SLEEP_BETWEEN_RUNS_MINUTES = 60  # Minutes between trading cycles (was 15 — 4x fewer API calls)
 
 # 🎯 TOKEN CONFIGURATION
 

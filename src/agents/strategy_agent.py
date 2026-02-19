@@ -61,8 +61,13 @@ class StrategyAgent:
 
         # Initialize exchange manager if available
         if USE_EXCHANGE_MANAGER:
-            self.em = ExchangeManager()
-            cprint(f"✅ Strategy Agent using ExchangeManager for {EXCHANGE}", "green")
+            try:
+                self.em = ExchangeManager()
+                cprint(f"✅ Strategy Agent using ExchangeManager for {EXCHANGE}", "green")
+            except Exception as e:
+                self.em = None
+                cprint(f"⚠️  ExchangeManager init failed (check HYPER_LIQUID_KEY in .env): {e}", "yellow")
+                cprint("   Strategy Agent running without exchange execution", "yellow")
         else:
             self.em = None
             cprint("✅ Strategy Agent using direct nice_funcs", "green")
@@ -71,13 +76,14 @@ class StrategyAgent:
             try:
                 # Import strategies directly
                 from src.strategies.custom.example_strategy import ExampleStrategy
-                from src.strategies.custom.private_my_strategy import MyStrategy
-                
-                # Initialize strategies
-                self.enabled_strategies.extend([
-                    ExampleStrategy(),
-                    MyStrategy()
-                ])
+                self.enabled_strategies.append(ExampleStrategy())
+
+                # Optional: load private strategy if available
+                try:
+                    from src.strategies.custom.private_my_strategy import MyStrategy
+                    self.enabled_strategies.append(MyStrategy())
+                except ImportError:
+                    cprint("⚠️  private_my_strategy not found — running with ExampleStrategy only", "yellow")
                 
                 print(f"✅ Loaded {len(self.enabled_strategies)} strategies!")
                 for strategy in self.enabled_strategies:
