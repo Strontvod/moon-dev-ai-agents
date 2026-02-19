@@ -91,16 +91,16 @@ buy_under = .0946
 sell_over = 1
 
 # Data collection settings 📈
-DAYSBACK_4_DATA = 3
+DAYSBACK_4_DATA = 1
 DATA_TIMEFRAME = '1H'  # 1m, 3m, 5m, 15m, 30m, 1H, 2H, 4H, 6H, 8H, 12H, 1D, 3D, 1W, 1M
 SAVE_OHLCV_DATA = False  # 🌙 Set to True to save data permanently, False will only use temp data during run
 
 # AI Model Settings 🤖
-AI_MODEL = "claude-3-haiku-20240307"  # Model Options:
-                                     # - claude-3-haiku-20240307 (Fast, efficient Claude model)
-                                     # - claude-3-sonnet-20240229 (Balanced Claude model)
-                                     # - claude-3-opus-20240229 (Most powerful Claude model)
-AI_MAX_TOKENS = 1024  # Max tokens for response
+AI_MODEL = "claude-haiku-4-5-20251001" # Model Options:
+                                     # - claude-haiku-4-5-20251001 (Fast, cheap — ~10x less than Sonnet)
+                                     # - claude-sonnet-4-6 (Balanced)
+                                     # - claude-opus-4-6 (Most powerful)
+AI_MAX_TOKENS = 300   # Max tokens for response (300 is plenty for Buy/Sell/Nothing)
 AI_TEMPERATURE = 0.7  # Creativity vs precision (0-1)
 
 # Trading Strategy Agent Settings - MAY NOT BE USED YET 1/5/25
@@ -108,7 +108,7 @@ ENABLE_STRATEGIES = True  # Set this to True to use strategies
 STRATEGY_MIN_CONFIDENCE = 0.7  # Minimum confidence to act on strategy signals
 
 # Sleep time between main agent runs
-SLEEP_BETWEEN_RUNS_MINUTES = 15  # How long to sleep between agent runs 🕒
+SLEEP_BETWEEN_RUNS_MINUTES = 60  # How long to sleep between agent runs 🕒
 
 # in our nice_funcs in token over view we look for minimum trades last hour
 MIN_TRADES_LAST_HOUR = 2

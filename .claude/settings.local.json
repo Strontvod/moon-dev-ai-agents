@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell.exe -Command:*)",
+      "Bash(ls:*)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -Command \"Stop-Process -Id 21276 -ErrorAction SilentlyContinue; Write-Host ''Killed 21276''\")",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -Command \"Stop-Process -Id 34244 -ErrorAction SilentlyContinue; Write-Host ''Stopped''\")",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -Command \"Stop-Process -Id 21024 -ErrorAction SilentlyContinue; Write-Host ''Stopped''\")",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -Command \"Get-Process python -ErrorAction SilentlyContinue | Select-Object Id, CPU | Format-Table; Stop-Process -Name python -ErrorAction SilentlyContinue; Write-Host ''All Python processes killed''\")",
+      "Bash(find:*)",
+      "Bash(.venv/Scripts/python.exe:*)",
+      "Bash(set:*)"
+    ]
+  }
+}

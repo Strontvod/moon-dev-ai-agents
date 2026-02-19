@@ -34,9 +34,9 @@ class ExchangeManager:
                 from src import nice_funcs_hyperliquid as hl
 
                 # Get HyperLiquid key from environment
-                hl_key = os.getenv('HYPER_LIQUID_KEY')
+                hl_key = os.getenv('HYPER_LIQUID_ETH_PRIVATE_KEY')
                 if not hl_key:
-                    raise ValueError("HYPER_LIQUID_KEY not found in environment")
+                    raise ValueError("HYPER_LIQUID_ETH_PRIVATE_KEY not found in environment")
 
                 # Initialize account
                 self.account = eth_account.Account.from_key(hl_key)

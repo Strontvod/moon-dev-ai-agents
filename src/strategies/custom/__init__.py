@@ -3,6 +3,6 @@
 """
 from src.strategies.base_strategy import BaseStrategy
 from .example_strategy import ExampleStrategy
-from .private_my_strategy import MyStrategy
+from .divergence_volatility_strategy import DivergenceVolatilityStrategy
 
-__all__ = ['ExampleStrategy', 'MyStrategy'] 
+__all__ = ['ExampleStrategy', 'DivergenceVolatilityStrategy']
