@@ -5,7 +5,9 @@ from backtesting import Backtest, Strategy
 
 # Data Preparation
 print("🌙 Loading BTC-USD 15m data for DeltaSentiment strategy...")
-data = pd.read_csv('/Users/md/Dropbox/dev/github/moon-dev-ai-agents-for-trading/src/data/rbi/BTC-USD-15m.csv')
+import os as _os
+_DATA_PATH = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))), 'rbi', 'BTC-USD-15m.csv')
+data = pd.read_csv(_DATA_PATH)
 data.columns = data.columns.str.strip().str.lower()
 data = data.drop(columns=[col for col in data.columns if 'unnamed' in col.lower()])
 data.rename(columns={
@@ -17,6 +19,7 @@ data.rename(columns={
 }, inplace=True)
 data['datetime'] = pd.to_datetime(data['datetime'])
 data.set_index('datetime', inplace=True)
+data = data.iloc[:, :5]  # Keep only OHLCV columns, drop any extras
 
 print(f"🚀 Data loaded: {len(data)} bars from {data.index[0]} to {data.index[-1]}")
 

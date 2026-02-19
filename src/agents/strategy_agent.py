@@ -75,15 +75,10 @@ class StrategyAgent:
         if ENABLE_STRATEGIES:
             try:
                 # Import strategies directly
-                from src.strategies.custom.example_strategy import ExampleStrategy
-                self.enabled_strategies.append(ExampleStrategy())
-
-                # Optional: load private strategy if available
-                try:
-                    from src.strategies.custom.private_my_strategy import MyStrategy
-                    self.enabled_strategies.append(MyStrategy())
-                except ImportError:
-                    cprint("⚠️  private_my_strategy not found — running with ExampleStrategy only", "yellow")
+                # Load DivergenceVolatility — best confirmed strategy (Sharpe 2.14)
+                from src.strategies.custom.divergence_volatility_strategy import DivergenceVolatilityStrategy
+                self.enabled_strategies.append(DivergenceVolatilityStrategy())
+                cprint(f"✅ Loaded 1 strategies: DivergenceVolatilityStrategy", "green")
                 
                 print(f"✅ Loaded {len(self.enabled_strategies)} strategies!")
                 for strategy in self.enabled_strategies:

@@ -237,7 +237,7 @@ RISK MANAGEMENT:
 
 If you need indicators use TA lib or pandas TA. 
 
-Use this data path: /Users/md/Dropbox/dev/github/moon-dev-ai-agents-for-trading/src/data/rbi/BTC-USD-15m.csv
+Use this data path: {DATA_PATH}
 the above data head looks like below
 datetime, open, high, low, close, volume,
 2023-01-01 00:00:00, 16531.83, 16532.69, 16509.11, 16510.82, 231.05338022,
@@ -331,6 +331,12 @@ import re
 from datetime import datetime
 import requests
 from io import BytesIO
+
+# Windows-compatible path to BTC backtest data
+DATA_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    'data', 'rbi', 'BTC-USD-15m.csv'
+).replace('\\', '/')
 import openai
 from termcolor import cprint
 try:
@@ -713,7 +719,7 @@ def create_backtest(strategy, strategy_name="UnknownStrategy"):
     output = run_with_animation(
         chat_with_model,
         "Backtest AI",
-        BACKTEST_PROMPT,
+        BACKTEST_PROMPT.format(DATA_PATH=DATA_PATH),
         f"Create a backtest for this strategy:\n\n{strategy}",
         BACKTEST_CONFIG  # Pass backtest-specific model config
     )

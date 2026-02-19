@@ -35,9 +35,9 @@ load_dotenv()
 
 # Agent Configuration
 ACTIVE_AGENTS = {
-    'risk': True,       # Risk management agent  🌙 ON - always runs first
-    'trading': True,    # LLM trading agent      🌙 ON - Hyperliquid execution
-    'strategy': True,   # Strategy-based trading agent 🌙 ON - signal layer
+    'risk':     True,   # Always runs first — no LLM, pure balance check
+    'trading':  False,  # OFF — no raw Claude OHLCV calls every cycle
+    'strategy': True,   # ON  — only calls LLM when divergence fires
     'copybot': False,   # CopyBot agent
     'sentiment': False, # Run sentiment_agent.py directly instead
     # whale_agent is run from whale_agent.py
