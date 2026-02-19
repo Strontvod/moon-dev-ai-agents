@@ -418,6 +418,16 @@ def get_balance(account):
     print(f'Available balance: ${balance:,.2f}')
     return balance
 
+def fetch_wallet_holdings_og(address=None):
+    """
+    Stub for Solana-style wallet holdings — not applicable on Hyperliquid.
+    Returns an empty DataFrame with expected columns so risk_agent doesn't crash.
+    Use get_all_positions(account) for actual Hyperliquid position data.
+    """
+    import pandas as pd
+    return pd.DataFrame(columns=['Mint Address', 'Symbol', 'Amount', 'USD Value', 'Value'])
+
+
 def get_all_positions(account):
     """Get all open positions"""
     info = Info(constants.MAINNET_API_URL, skip_ws=True)
