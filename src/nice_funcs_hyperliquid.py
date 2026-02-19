@@ -114,8 +114,10 @@ def get_sz_px_decimals(symbol):
     print(f'{symbol} price: {ask} | sz decimals: {sz_decimals} | px decimals: {px_decimals}')
     return sz_decimals, px_decimals
 
-def get_position(symbol, account):
+def get_position(symbol, account=None):
     """Get current position for a symbol"""
+    if account is None:
+        account = _get_account_from_env()
     print(f'{colored("Getting position for", "cyan")} {colored(symbol, "yellow")}')
 
     info = Info(constants.MAINNET_API_URL, skip_ws=True)
@@ -829,17 +831,19 @@ def test_funding_rates():
 # ADDITIONAL TRADING FUNCTIONS
 # ============================================================================
 
-def get_token_balance_usd(token_mint_address, account):
+def get_token_balance_usd(token_mint_address, account=None):
     """Get USD value of current position
 
     Args:
         token_mint_address: Token symbol (e.g., 'BTC', 'ETH')
-        account: HyperLiquid account object
+        account: HyperLiquid account object (auto-created from env if not provided)
 
     Returns:
         float: USD value of position (absolute value)
     """
     try:
+        if account is None:
+            account = _get_account_from_env()
         positions, im_in_pos, pos_size, _, _, _, _ = get_position(token_mint_address, account)
         if not im_in_pos:
             return 0
