@@ -73,7 +73,7 @@ def read_sentiment_signal() -> float | None:
     """
     try:
         df = pd.read_csv(SENTIMENT_CSV)
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
+        df['timestamp'] = pd.to_datetime(df['timestamp'], format='mixed', utc=False)
         df = df.sort_values('timestamp')
         recent = df[df['timestamp'] >= pd.Timestamp.now() - pd.Timedelta(hours=MAX_DATA_AGE_HOURS)]
         if recent.empty:
@@ -98,7 +98,7 @@ def read_funding_signal() -> float | None:
     """
     try:
         df = pd.read_csv(FUNDING_CSV)
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
+        df['timestamp'] = pd.to_datetime(df['timestamp'], format='mixed', utc=True).dt.tz_localize(None)
         df = df.sort_values('timestamp')
         recent = df[df['timestamp'] >= pd.Timestamp.now() - pd.Timedelta(hours=MAX_DATA_AGE_HOURS)]
         if recent.empty:
@@ -141,14 +141,16 @@ def read_oi_signal() -> float | None:
     """
     try:
         df = pd.read_csv(OI_CSV)
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
+        df['timestamp'] = pd.to_datetime(df['timestamp'], format='mixed', utc=False)
         df = df.sort_values('timestamp')
         recent = df[df['timestamp'] >= pd.Timestamp.now() - pd.Timedelta(hours=MAX_DATA_AGE_HOURS)]
         if recent.empty:
             cprint("⚠️  OI data stale or missing", "yellow")
             return None
 
-        oi_chg = float(recent['oi_change_pct'].iloc[-1])
+        # whale_agent writes 'total_change_pct'; fall back to 'oi_change_pct' if renamed
+        col = 'total_change_pct' if 'total_change_pct' in recent.columns else 'oi_change_pct'
+        oi_chg = float(recent[col].iloc[-1])
 
         # Normalize: ±25% OI change → ±1.0 signal
         signal = np.clip(oi_chg / 25.0, -1, 1)
@@ -169,15 +171,18 @@ def read_liquidation_signal() -> float | None:
     """
     try:
         df = pd.read_csv(LIQUIDATION_CSV)
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
+        df['timestamp'] = pd.to_datetime(df['timestamp'], format='mixed', utc=False)
         df = df.sort_values('timestamp')
         recent = df[df['timestamp'] >= pd.Timestamp.now() - pd.Timedelta(hours=MAX_DATA_AGE_HOURS)]
         if recent.empty:
             cprint("⚠️  Liquidation data stale or missing", "yellow")
             return None
 
-        long_liq  = float(recent['long_liq_usd'].iloc[-1])
-        short_liq = float(recent['short_liq_usd'].iloc[-1])
+        # liquidation_agent writes 'long_size'/'short_size'; support both naming conventions
+        long_col  = 'long_liq_usd'  if 'long_liq_usd'  in recent.columns else 'long_size'
+        short_col = 'short_liq_usd' if 'short_liq_usd' in recent.columns else 'short_size'
+        long_liq  = float(recent[long_col].iloc[-1])
+        short_liq = float(recent[short_col].iloc[-1])
         total      = long_liq + short_liq
 
         if total == 0:

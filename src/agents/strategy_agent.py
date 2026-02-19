@@ -12,6 +12,14 @@ import importlib
 import inspect
 import time
 
+# Signal Fusion gate — checks funding, OI, sentiment, liquidation before LLM call
+try:
+    from src.agents.signal_fusion_agent import should_trade as fusion_gate
+    FUSION_AVAILABLE = True
+except ImportError:
+    FUSION_AVAILABLE = False
+    cprint("⚠️  signal_fusion_agent not available — skipping fusion gate", "yellow")
+
 # Import exchange manager for unified trading
 try:
     from src.exchange_manager import ExchangeManager
@@ -161,7 +169,22 @@ class StrategyAgent:
             for signal in signals:
                 print(f"  • {signal['strategy_name']}: {signal['direction']} ({signal['signal']}) for {signal['token']}")
             
-            # 2. Get market data for context
+            # 2. Signal Fusion gate — only proceed if macro conditions agree
+            if FUSION_AVAILABLE:
+                ok, reason, fusion_sig = fusion_gate(
+                    min_score=25.0,
+                    min_confidence=40.0,
+                    min_sources=2,
+                )
+                cprint(f"\n🔀 Signal Fusion: score={fusion_sig['score']:+.1f}  dir={fusion_sig['direction']}  conf={fusion_sig['confidence']:.1f}%  sources={fusion_sig['active_sources']}/4", "cyan")
+                if not ok:
+                    cprint(f"⛔ Fusion gate blocked — {reason}. Skipping LLM call.", "yellow")
+                    return []
+                cprint(f"✅ Fusion gate passed — {reason}", "green")
+            else:
+                cprint("⚠️  Fusion gate skipped (not available)", "yellow")
+
+            # 3. Get market data for context
             try:
                 from src.data.ohlcv_collector import collect_token_data
                 market_data = collect_token_data(token)
@@ -169,7 +192,7 @@ class StrategyAgent:
                 print(f"⚠️ Could not get market data: {e}")
                 market_data = {}
             
-            # 3. Have LLM evaluate the signals
+            # 4. Have LLM evaluate the signals — only reached if fusion gate passes
             print("\n🤖 Getting LLM evaluation of signals...")
             evaluation = self.evaluate_signals(signals, market_data)
             
