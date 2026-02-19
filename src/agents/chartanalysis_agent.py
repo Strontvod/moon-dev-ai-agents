@@ -83,7 +83,7 @@ class ChartAnalysisAgent(BaseAgent):
         self.audio_dir.mkdir(parents=True, exist_ok=True)
         
         # Load environment variables
-        load_dotenv()
+        load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
         
         # Initialize API clients
         openai_key = os.getenv("OPENAI_KEY")

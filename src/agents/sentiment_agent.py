@@ -49,7 +49,7 @@ from pathlib import Path
 pathlib.Path(DATA_FOLDER).mkdir(parents=True, exist_ok=True)
 
 # Load environment variables
-load_dotenv()
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
 # Get OpenAI key for voice
 openai.api_key = os.getenv("OPENAI_KEY")

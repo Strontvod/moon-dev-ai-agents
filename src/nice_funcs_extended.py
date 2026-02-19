@@ -26,7 +26,7 @@ except ImportError:
     cprint("⚠️  Extended Exchange SDK not installed. Install with: pip install x10-perpetual-sdk", "yellow")
     raise
 
-load_dotenv()
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
 # =============================================================================
 # 🌙 Moon Dev's Symbol Format Conversion

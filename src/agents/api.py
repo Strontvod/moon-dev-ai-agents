@@ -91,7 +91,7 @@ import io
 from dotenv import load_dotenv
 
 # Load environment variables
-load_dotenv()
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
 # Get the project root directory
 PROJECT_ROOT = Path(__file__).parent.parent.parent

@@ -60,7 +60,7 @@ from threading import Lock, Semaphore, Thread
 from queue import Queue
 
 # Load environment variables FIRST
-load_dotenv()
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 print("✅ Environment variables loaded")
 
 # Add config values directly to avoid import issues

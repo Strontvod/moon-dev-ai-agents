@@ -42,7 +42,7 @@ if project_root not in sys.path:
 # Load environment variables
 if not TESTING_MODE:
     from dotenv import load_dotenv
-    load_dotenv()
+    load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
     
     # Initialize OpenAI client with correct env var name
     openai.api_key = os.getenv("OPENAI_KEY")

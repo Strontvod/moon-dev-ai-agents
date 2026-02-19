@@ -45,7 +45,7 @@ class VideoAgent:
     
     def __init__(self):
         """Initialize the Video Agent"""
-        load_dotenv()
+        load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
         
         # Set ElevenLabs API key
         api_key = os.getenv("ELEVENLABS_API_KEY")

@@ -47,7 +47,7 @@ from dotenv import load_dotenv
 import requests
 
 # Load environment variables
-load_dotenv()
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
 # 🌙 Moon Dev Configuration 🌙
 SLEEP_BETWEEN_SEARCHES = 60  # Seconds to wait between searches (default: 60)

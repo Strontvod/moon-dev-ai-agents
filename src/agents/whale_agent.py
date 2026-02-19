@@ -93,7 +93,7 @@ class WhaleAgent(BaseAgent):
             if AI_MAX_TOKENS > 0:
                 print(f"  - Max Tokens: {AI_MAX_TOKENS}")
         
-        load_dotenv()
+        load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
         
         # Get API keys
         openai_key = os.getenv("OPENAI_KEY")

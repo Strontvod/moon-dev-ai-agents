@@ -42,7 +42,7 @@ from src import nice_funcs as n
 from src.models.model_factory import model_factory
 
 # Load environment variables
-load_dotenv()
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
 # ============== AI DECISION PROMPT ==============
 AI_DECISION_PROMPT = """You are an AI trading assistant evaluating a Housecoin DCA (Dollar Cost Average) buy signal.

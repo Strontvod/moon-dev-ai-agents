@@ -101,7 +101,7 @@ class FundingAgent(BaseAgent):
         # Set active model - use override if set, otherwise use config
         self.active_model = MODEL_OVERRIDE if MODEL_OVERRIDE != "0" else config.AI_MODEL
         
-        load_dotenv()
+        load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
         
         # Initialize OpenAI client for voice only
         openai_key = os.getenv("OPENAI_KEY")

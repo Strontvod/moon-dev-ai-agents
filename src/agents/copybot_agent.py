@@ -67,7 +67,7 @@ class CopyBotAgent:
     
     def __init__(self):
         """Initialize the CopyBot agent with LLM"""
-        load_dotenv()
+        load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
         self.client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_KEY"))
         self.recommendations_df = pd.DataFrame(columns=['token', 'action', 'confidence', 'reasoning'])
         print("🤖 Moon Dev's CopyBot Agent initialized!")

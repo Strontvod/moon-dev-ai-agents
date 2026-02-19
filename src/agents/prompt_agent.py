@@ -51,7 +51,7 @@ from dotenv import load_dotenv
 import requests
 
 # Load environment variables
-load_dotenv()
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
 # 🌙 Moon Dev Configuration 🌙
 GLM_MODEL = "z-ai/glm-4.6"  # Zhipu AI GLM - Moon Dev's choice!

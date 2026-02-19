@@ -12,7 +12,7 @@ import pandas as pd
 import time
 
 # Load environment variables
-load_dotenv()
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
 class ExchangeManager:
     """

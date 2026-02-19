@@ -28,7 +28,7 @@ if src_path not in sys.path:
     sys.path.append(src_path)
 
 # Load environment variables
-load_dotenv()
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
 # Suppress ALL logs except critical
 logging.getLogger().setLevel(logging.CRITICAL)

@@ -297,7 +297,7 @@ from src.models.model_factory import model_factory
 from src.agents.swarm_agent import SwarmAgent
 
 # Load environment variables
-load_dotenv()
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
 # ============================================================================
 # HELPER FUNCTIONS

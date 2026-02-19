@@ -118,7 +118,7 @@ import openai
 import src.config as config
 
 # Load environment variables
-load_dotenv()
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
 # Model override settings
 # Set to "0" to use config.py's AI_MODEL setting

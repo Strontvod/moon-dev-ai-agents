@@ -39,7 +39,7 @@ except ImportError as e:
     cprint(f"⚠️  Aster modules not available (OK if using Hyperliquid/Solana): {e}", "yellow")
 
 # Load environment variables
-load_dotenv()
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
 # Only initialise Aster if modules loaded successfully
 if ASTER_AVAILABLE:

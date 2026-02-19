@@ -22,7 +22,7 @@ import pandas as pd
 from termcolor import cprint
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
 # ─── Constants ────────────────────────────────────────────────────────────────
 QUOTE_TOKEN   = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"   # USDC

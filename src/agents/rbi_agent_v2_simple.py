@@ -18,7 +18,7 @@ from openai import OpenAI
 from anthropic import Anthropic
 
 # Load environment variables
-load_dotenv()
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
 # Configuration
 CONDA_ENV = "tflow"
