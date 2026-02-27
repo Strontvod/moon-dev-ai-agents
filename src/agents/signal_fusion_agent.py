@@ -33,18 +33,33 @@ HISTORY_FILE = os.path.join(OUTPUT_DIR, "signal_history.csv")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # ─── Source Data Paths ────────────────────────────────────────────────────────
-SENTIMENT_CSV   = "src/data/sentiment_history.csv"
-FUNDING_CSV     = "src/data/funding_history.csv"
-OI_CSV          = "src/data/oi_history.csv"
-LIQUIDATION_CSV = "src/data/liquidation_history.csv"
+SENTIMENT_CSV           = "src/data/sentiment_history.csv"
+FUNDING_CSV             = "src/data/funding_history.csv"
+OI_CSV                  = "src/data/oi_history.csv"
+LIQUIDATION_CSV         = "src/data/liquidation_history.csv"
+SMART_MONEY_CSV         = "src/data/smart_money_history.csv"
+ORDERFLOW_CSV           = "src/data/orderflow_history.csv"
+HLP_CSV                 = "src/data/hlp_history.csv"
+POSITION_SNAPSHOT_CSV   = "src/data/position_snapshot_history.csv"   # NEW
+MULTI_LIQ_CSV           = "src/data/multi_liq_history.csv"           # NEW
+BUYER_TRACKER_CSV       = "src/data/buyer_history.csv"               # NEW
 
 # ─── Signal Weights (must sum to 1.0) ────────────────────────────────────────
+# 10 sources total — 87% active without Twitter sentiment
 WEIGHTS = {
-    "sentiment":   0.25,   # Social sentiment (Twitter/news)
-    "funding":     0.30,   # Perpetual funding rates (strongest edge)
-    "oi":          0.25,   # Open interest / whale moves
-    "liquidation": 0.20,   # Liquidation pressure
+    "sentiment":          0.13,  # Social sentiment (Twitter/news)
+    "funding":            0.20,  # Perpetual funding rates (strongest edge)
+    "oi":                 0.12,  # Open interest / whale moves
+    "liquidation":        0.10,  # HL-only liquidation pressure
+    "smart_money":        0.12,  # Smart money trading signals
+    "orderflow":          0.08,  # Buy/sell imbalance
+    "hlp":                0.05,  # Contrarian HLP positioning
+    "position_snapshot":  0.10,  # Squeeze signals (positions near liquidation)
+    "multi_liq":          0.05,  # Multi-exchange liquidations (HL+Binance+Bybit+OKX)
+    "buyer_tracker":      0.05,  # $5k+ buyer accumulation signals
 }
+
+TOTAL_SOURCES = len(WEIGHTS)  # 10
 
 # ─── Staleness threshold: ignore data older than this ────────────────────────
 MAX_DATA_AGE_HOURS = 2
@@ -57,13 +72,28 @@ MAX_DATA_AGE_HOURS = 2
 
 def _is_fresh(ts: pd.Timestamp) -> bool:
     """Check if a timestamp is within MAX_DATA_AGE_HOURS."""
-    cutoff = datetime.now() - timedelta(hours=MAX_DATA_AGE_HOURS)
+    cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=MAX_DATA_AGE_HOURS)
     return ts.to_pydatetime().replace(tzinfo=None) >= cutoff
 
 
 def _cutoff() -> pd.Timestamp:
-    """Return a timezone-naive cutoff timestamp for CSV comparisons."""
-    return pd.Timestamp.now() - pd.Timedelta(hours=MAX_DATA_AGE_HOURS)
+    """Return a timezone-naive UTC cutoff timestamp for CSV comparisons."""
+    return pd.Timestamp.now(tz='UTC').tz_localize(None) - pd.Timedelta(hours=MAX_DATA_AGE_HOURS)
+
+
+def _parse_ts(df: pd.DataFrame) -> pd.DataFrame:
+    """Parse 'timestamp' column to timezone-naive UTC for consistent comparisons."""
+    df['timestamp'] = (
+        pd.to_datetime(df['timestamp'], format='mixed', utc=True)
+        .dt.tz_convert(None)
+    )
+    return df.sort_values('timestamp')
+
+
+def _recent(df: pd.DataFrame) -> pd.DataFrame:
+    """Filter to rows within MAX_DATA_AGE_HOURS."""
+    cutoff = pd.Timestamp.now(tz='UTC').tz_localize(None) - pd.Timedelta(hours=MAX_DATA_AGE_HOURS)
+    return df[df['timestamp'] >= cutoff]
 
 
 def read_sentiment_signal() -> float | None:
@@ -72,10 +102,8 @@ def read_sentiment_signal() -> float | None:
     Expects columns: timestamp, sentiment_score  (score in [-1, +1])
     """
     try:
-        df = pd.read_csv(SENTIMENT_CSV)
-        df['timestamp'] = pd.to_datetime(df['timestamp'], format='mixed', utc=False)
-        df = df.sort_values('timestamp')
-        recent = df[df['timestamp'] >= pd.Timestamp.now() - pd.Timedelta(hours=MAX_DATA_AGE_HOURS)]
+        df = _parse_ts(pd.read_csv(SENTIMENT_CSV))
+        recent = _recent(df)
         if recent.empty:
             cprint("⚠️  Sentiment data stale or missing", "yellow")
             return None
@@ -98,9 +126,9 @@ def read_funding_signal() -> float | None:
     """
     try:
         df = pd.read_csv(FUNDING_CSV)
-        df['timestamp'] = pd.to_datetime(df['timestamp'], format='mixed', utc=True).dt.tz_localize(None)
+        df['timestamp'] = pd.to_datetime(df['timestamp'], format='mixed', utc=True).dt.tz_convert(None)
         df = df.sort_values('timestamp')
-        recent = df[df['timestamp'] >= pd.Timestamp.now() - pd.Timedelta(hours=MAX_DATA_AGE_HOURS)]
+        recent = df[df['timestamp'] >= pd.Timestamp.now(tz='UTC').tz_localize(None) - pd.Timedelta(hours=MAX_DATA_AGE_HOURS)]
         if recent.empty:
             cprint("⚠️  Funding data stale or missing", "yellow")
             return None
@@ -131,30 +159,18 @@ def read_funding_signal() -> float | None:
 
 def read_oi_signal() -> float | None:
     """
-    Reads oi_history.csv (Open Interest — whale agent output).
-    Expects columns: timestamp, oi_change_pct
-
-    Logic:
-      - Surging OI + price rising → confirms uptrend (+)
-      - Surging OI + price falling → confirms downtrend (-)
-      - Falling OI → position unwinding, reduce confidence
+    Reads oi_history.csv.
+    Expects columns: timestamp, total_change_pct (or oi_change_pct)
     """
     try:
-        df = pd.read_csv(OI_CSV)
-        df['timestamp'] = pd.to_datetime(df['timestamp'], format='mixed', utc=False)
-        df = df.sort_values('timestamp')
-        recent = df[df['timestamp'] >= pd.Timestamp.now() - pd.Timedelta(hours=MAX_DATA_AGE_HOURS)]
+        df = _parse_ts(pd.read_csv(OI_CSV))
+        recent = _recent(df)
         if recent.empty:
             cprint("⚠️  OI data stale or missing", "yellow")
             return None
-
-        # whale_agent writes 'total_change_pct'; fall back to 'oi_change_pct' if renamed
         col = 'total_change_pct' if 'total_change_pct' in recent.columns else 'oi_change_pct'
         oi_chg = float(recent[col].iloc[-1])
-
-        # Normalize: ±25% OI change → ±1.0 signal
-        signal = np.clip(oi_chg / 25.0, -1, 1)
-        return signal
+        return np.clip(oi_chg / 25.0, -1, 1)
     except Exception as e:
         cprint(f"⚠️  OI read error: {e}", "yellow")
         return None
@@ -164,35 +180,144 @@ def read_liquidation_signal() -> float | None:
     """
     Reads liquidation_history.csv.
     Expects columns: timestamp, long_liq_usd, short_liq_usd
-
-    Logic:
-      - More longs liquidated → price was falling → oversold bounce potential (+)
-      - More shorts liquidated → price was rising → overbought caution (-)
     """
     try:
-        df = pd.read_csv(LIQUIDATION_CSV)
-        df['timestamp'] = pd.to_datetime(df['timestamp'], format='mixed', utc=False)
-        df = df.sort_values('timestamp')
-        recent = df[df['timestamp'] >= pd.Timestamp.now() - pd.Timedelta(hours=MAX_DATA_AGE_HOURS)]
+        df = _parse_ts(pd.read_csv(LIQUIDATION_CSV))
+        recent = _recent(df)
         if recent.empty:
             cprint("⚠️  Liquidation data stale or missing", "yellow")
             return None
-
-        # liquidation_agent writes 'long_size'/'short_size'; support both naming conventions
         long_col  = 'long_liq_usd'  if 'long_liq_usd'  in recent.columns else 'long_size'
         short_col = 'short_liq_usd' if 'short_liq_usd' in recent.columns else 'short_size'
         long_liq  = float(recent[long_col].iloc[-1])
         short_liq = float(recent[short_col].iloc[-1])
-        total      = long_liq + short_liq
-
+        total     = long_liq + short_liq
         if total == 0:
             return 0.0
-
-        # Ratio: +1 = all longs wiped (bullish bounce), -1 = all shorts wiped (bearish)
-        ratio = (long_liq - short_liq) / total
-        return np.clip(ratio, -1, 1)
+        return np.clip((long_liq - short_liq) / total, -1, 1)
     except Exception as e:
         cprint(f"⚠️  Liquidation read error: {e}", "yellow")
+        return None
+
+
+def read_smart_money_signal() -> float | None:
+    """
+    Reads smart_money_history.csv.
+    Expects columns: timestamp, signal_score  (score in [-1, +1])
+    """
+    try:
+        df = _parse_ts(pd.read_csv(SMART_MONEY_CSV))
+        recent = _recent(df)
+        if recent.empty:
+            cprint("⚠️  Smart money data stale or missing", "yellow")
+            return None
+        return np.clip(float(recent['signal_score'].iloc[-1]), -1, 1)
+    except Exception as e:
+        cprint(f"⚠️  Smart money read error: {e}", "yellow")
+        return None
+
+
+def read_orderflow_signal() -> float | None:
+    """
+    Reads orderflow_history.csv.
+    Expects columns: timestamp, imbalance_ratio  (ratio in [-1, +1])
+    """
+    try:
+        df = _parse_ts(pd.read_csv(ORDERFLOW_CSV))
+        recent = _recent(df)
+        if recent.empty:
+            cprint("⚠️  Order flow data stale or missing", "yellow")
+            return None
+        return np.clip(float(recent['imbalance_ratio'].iloc[-1]), -1, 1)
+    except Exception as e:
+        cprint(f"⚠️  Order flow read error: {e}", "yellow")
+        return None
+
+
+def read_hlp_signal() -> float | None:
+    """
+    Reads hlp_history.csv.
+    Expects columns: timestamp, sentiment_score  (score in [-1, +1])
+    """
+    try:
+        df = _parse_ts(pd.read_csv(HLP_CSV))
+        recent = _recent(df)
+        if recent.empty:
+            cprint("⚠️  HLP data stale or missing", "yellow")
+            return None
+        return np.clip(float(recent['sentiment_score'].iloc[-1]), -1, 1)
+    except Exception as e:
+        cprint(f"⚠️  HLP read error: {e}", "yellow")
+        return None
+
+
+def read_position_snapshot_signal() -> float | None:
+    """
+    Reads position_snapshot_history.csv.
+    Expects columns: timestamp, squeeze_score  (score in [-1, +1])
+
+    Interpretation (contrarian):
+      +1 = many longs near liquidation → long squeeze risk → bearish → SHORT signal
+      -1 = many shorts near liquidation → short squeeze risk → bullish → LONG signal
+    So we INVERT the squeeze_score to get a trading signal.
+    """
+    try:
+        df = _parse_ts(pd.read_csv(POSITION_SNAPSHOT_CSV))
+        recent = _recent(df)
+        if recent.empty:
+            cprint("⚠️  Position snapshot data stale or missing", "yellow")
+            return None
+        # Average across symbols (BTC/ETH/SOL)
+        score = float(recent['squeeze_score'].mean())
+        # Invert: longs at risk (positive squeeze) → bearish signal (negative)
+        return np.clip(-score, -1, 1)
+    except Exception as e:
+        cprint(f"⚠️  Position snapshot read error: {e}", "yellow")
+        return None
+
+
+def read_multi_liq_signal() -> float | None:
+    """
+    Reads multi_liq_history.csv.
+    Expects columns: timestamp, liq_ratio  (ratio in [-1, +1])
+
+    liq_ratio > 0 → more longs liquidated → bearish pressure → SHORT signal
+    liq_ratio < 0 → more shorts liquidated → bullish pressure → LONG signal
+    Invert for trading signal.
+    """
+    try:
+        df = _parse_ts(pd.read_csv(MULTI_LIQ_CSV))
+        recent = _recent(df)
+        if recent.empty:
+            cprint("⚠️  Multi-liq data stale or missing", "yellow")
+            return None
+        ratio = float(recent['liq_ratio'].iloc[-1])
+        # Invert: more longs liquidated = bearish = negative signal
+        return np.clip(-ratio, -1, 1)
+    except Exception as e:
+        cprint(f"⚠️  Multi-liq read error: {e}", "yellow")
+        return None
+
+
+def read_buyer_tracker_signal() -> float | None:
+    """
+    Reads buyer_history.csv.
+    Expects columns: timestamp, accumulation_score  (score in [-1, +1])
+
+    +1 = strong accumulation (large buyers active) → bullish
+    -1 = distribution (large sellers active) → bearish
+    """
+    try:
+        df = _parse_ts(pd.read_csv(BUYER_TRACKER_CSV))
+        recent = _recent(df)
+        if recent.empty:
+            cprint("⚠️  Buyer tracker data stale or missing", "yellow")
+            return None
+        # Average across symbols
+        score = float(recent['accumulation_score'].mean())
+        return np.clip(score, -1, 1)
+    except Exception as e:
+        cprint(f"⚠️  Buyer tracker read error: {e}", "yellow")
         return None
 
 
@@ -220,10 +345,16 @@ def get_fused_signal(verbose: bool = True) -> dict:
         }
     """
     raw = {
-        "sentiment":   read_sentiment_signal(),
-        "funding":     read_funding_signal(),
-        "oi":          read_oi_signal(),
-        "liquidation": read_liquidation_signal(),
+        "sentiment":         read_sentiment_signal(),
+        "funding":           read_funding_signal(),
+        "oi":                read_oi_signal(),
+        "liquidation":       read_liquidation_signal(),
+        "smart_money":       read_smart_money_signal(),
+        "orderflow":         read_orderflow_signal(),
+        "hlp":               read_hlp_signal(),
+        "position_snapshot": read_position_snapshot_signal(),
+        "multi_liq":         read_multi_liq_signal(),
+        "buyer_tracker":     read_buyer_tracker_signal(),
     }
 
     # Only score sources that returned data
@@ -265,7 +396,7 @@ def get_fused_signal(verbose: bool = True) -> dict:
     # Confidence: how many sources agree on direction, scaled by active count
     signs = [np.sign(v) for v in active.values()]
     agree = signs.count(np.sign(score)) if score != 0 else len(signs)
-    confidence = round((agree / active_count) * 100 * (active_count / 4), 1)
+    confidence = round((agree / active_count) * 100 * (active_count / TOTAL_SOURCES), 1)
     confidence = min(confidence, 100.0)
 
     result = {
@@ -322,7 +453,7 @@ def _print_summary(result: dict):
     cprint(f"  Score:       {result['score']:+.1f} / 100", colour)
     cprint(f"  Direction:   {result['direction']}", colour, attrs=["bold"])
     cprint(f"  Confidence:  {result['confidence']:.1f}%", "white")
-    cprint(f"  Sources:     {result['active_sources']}/4 active", "white")
+    cprint(f"  Sources:     {result['active_sources']}/{TOTAL_SOURCES} active", "white")
     cprint("─" * 50, "cyan")
     for k, v in result["sources"].items():
         val_str = f"{v:+.3f}" if v is not None else "N/A (stale)"

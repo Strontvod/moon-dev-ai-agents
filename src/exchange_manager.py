@@ -330,12 +330,25 @@ class ExchangeManager:
             DataFrame with OHLCV data
         """
         if self.exchange.lower() == 'hyperliquid':
-            # HyperLiquid doesn't have get_data in our implementation yet
-            # For now, return empty dataframe
-            cprint(f"⚠️ OHLCV data not yet implemented for HyperLiquid", "yellow")
-            return pd.DataFrame()
+            # Map timeframe to HL format (e.g. '1H' -> '1h')
+            hl_tf = timeframe.replace('H', 'h').replace('D', 'd').replace('M', 'm')
+            bars = max(int(days_back * 24 * (60 // self._tf_to_minutes(hl_tf))), 60)
+            return self.hl.get_data(symbol=symbol_or_token, timeframe=hl_tf,
+                                    bars=min(bars, 5000), add_indicators=False)
         else:
             return self.solana.get_data(symbol_or_token, days_back, timeframe)
+
+    @staticmethod
+    def _tf_to_minutes(tf: str) -> int:
+        """Convert timeframe string to minutes (e.g. '15m'->15, '1h'->60, '4h'->240, '1d'->1440)."""
+        tf = tf.lower()
+        if tf.endswith('d'):
+            return int(tf[:-1]) * 1440
+        elif tf.endswith('h'):
+            return int(tf[:-1]) * 60
+        elif tf.endswith('m'):
+            return int(tf[:-1])
+        return 60  # default
 
     def fetch_wallet_holdings(self, wallet_address=None):
         """

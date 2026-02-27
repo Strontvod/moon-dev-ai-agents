@@ -5,6 +5,7 @@ Handles all strategy-based trading decisions
 
 from src.config import *
 import json
+import pandas as pd
 from termcolor import cprint
 import anthropic
 import os
@@ -146,13 +147,22 @@ class StrategyAgent:
     def get_signals(self, token):
         """Get and evaluate signals from all enabled strategies"""
         try:
-            # 1. Collect signals from all strategies
+            # 1. Fetch OHLCV data for the token
             signals = []
             print(f"\n🔍 Analyzing {token} with {len(self.enabled_strategies)} strategies...")
-            
+
+            df = pd.DataFrame()
+            if self.em:
+                df = self.em.get_data(token, days_back=3, timeframe='15m')
+
+            if df.empty:
+                print(f"⚠️ No OHLCV data for {token}, skipping strategies")
+                return []
+
+            # 2. Collect signals from all strategies
             for strategy in self.enabled_strategies:
-                signal = strategy.generate_signals()
-                if signal and signal['token'] == token:
+                signal = strategy.analyze(df, token)
+                if signal and signal.get('direction') != 'NEUTRAL':
                     signals.append({
                         'token': signal['token'],
                         'strategy_name': strategy.name,

@@ -144,10 +144,21 @@ SLEEP_BETWEEN_RUNS_MINUTES = 15
 
 1. Fill `src/.env`
 2. `pip install -r requirements.txt`
-3. `python src/agents/risk_agent.py`      ← verify risk agent connects
-4. `python src/agents/signal_fusion_agent.py` ← check signal sources
+3. **`python -X utf8 src/scripts/check_live_trading.py`** ← **run this first — full readiness check**
+4. `python src/agents/signal_fusion_agent.py` ← check signal sources (8/10 free, 10/10 with MoonDev key)
 5. `python src/agents/rbi_agent.py`       ← test backtest pipeline
-6. `python src/main.py`                   ← full orchestrator
+6. Set `LIVE_TRADING = True` in `src/config.py` when ready
+7. `python src/main.py`                   ← full orchestrator
+
+### What `check_live_trading.py` verifies:
+| Check | What it tests |
+|---|---|
+| Environment variables | All API keys present and non-placeholder |
+| Hyperliquid connection | API reachable, account balance, open positions |
+| Signal fusion | 8–10 sources active, score + direction |
+| AI model | Live inference test (Groq → DeepSeek → Claude fallback) |
+| Config safety limits | Position size, leverage, loss limits |
+| Exchange Manager dry-run | Account value, BTC price, OHLCV data fetch |
 
 ---
 

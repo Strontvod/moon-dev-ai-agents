@@ -1,0 +1,30 @@
+STRATEGY_NAME: Selective Momentum Reversal
+
+STRATEGY_DETAILS:
+This is a selective momentum swing trading strategy that focuses on identifying potential reversals near key support and resistance levels.
+
+Key Components:
+1. Entry Triggers:
+   - RSI crosses below 25 or above 75, indicating overbought/oversold conditions
+   - Price is near a support or resistance zone identified using pivot points
+   - Volume is at least 1.5x the average volume, confirming momentum
+
+2. Entry Rules:
+   - Buy when RSI crosses above 25 while price is near support
+   - Sell short when RSI crosses below 75 while price is near resistance
+
+3. Exit Rules:
+   - Use a trailing stop based on 2x Average True Range (ATR) to protect profits
+   - Trail the stop loss as the position moves in the desired direction
+
+4. Risk Management:
+   - Position size should be adjusted based on volatility (ATR)
+   - Use a stop loss of 1x ATR to limit downside risk on each trade
+
+5. Required Indicators:
+   - Relative Strength Index (RSI)
+   - Pivot Points
+   - Average True Range (ATR)
+   - Volume
+
+This strategy aims to capture momentum-driven reversals near key support and resistance levels, with a focus on selective entry conditions to improve the win rate. The use of trailing stops and volume confirmation helps to manage risk and filter out weaker signals. Overall, this approach combines momentum, support/resistance, and volatility-based risk management to identify high-probability reversal opportunities.

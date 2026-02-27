@@ -9,7 +9,24 @@
       "Bash(powershell.exe -ExecutionPolicy Bypass -Command \"Get-Process python -ErrorAction SilentlyContinue | Select-Object Id, CPU | Format-Table; Stop-Process -Name python -ErrorAction SilentlyContinue; Write-Host ''All Python processes killed''\")",
       "Bash(find:*)",
       "Bash(.venv/Scripts/python.exe:*)",
-      "Bash(set:*)"
+      "Bash(set:*)",
+      "Bash(pip show:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(ss:*)",
+      "Bash(openclaw status:*)",
+      "Bash(openclaw gateway start:*)",
+      "Bash(openclaw gateway install:*)",
+      "Bash(openclaw gateway run:*)",
+      "Bash(openclaw dashboard:*)",
+      "Bash(npx skillfish add:*)",
+      "Bash(wc -l /f/GitHub/moon-dev-ai-agents/moon-dev-ai-agents/src/agents/*.py)",
+      "Bash(grep -l \"if __name__\" /f/GitHub/moon-dev-ai-agents/moon-dev-ai-agents/src/agents/*.py)",
+      "WebFetch(domain:moondev.com)",
+      "WebFetch(domain:api.moondev.com)",
+      "Bash(python -c \"from src.agents.api import MoonDevAPI; api = MoonDevAPI\\(\\); print\\(''API key:'', ''set'' if api.api_key else ''MISSING''\\); prices = api.get_prices\\(\\); print\\(f''Prices: {len\\(prices\\)} coins'' if not prices.empty else ''Prices: no data''\\); print\\(f''Columns: {prices.columns.tolist\\(\\)[:5]}'' if not prices.empty else ''''\\)\")",
+      "Bash(python -c \"from dotenv import load_dotenv; import os; load_dotenv\\(dotenv_path=os.path.join\\(''src'', ''.env''\\)\\); key = os.getenv\\(''MOONDEV_API_KEY'', ''''\\); print\\(f''MOONDEV_API_KEY: {key[:6]}...{key[-4:]}'' if len\\(key\\) > 10 else f''MOONDEV_API_KEY: {repr\\(key\\)}''\\)\")",
+      "Bash(python -c \":*)"
     ]
   }
 }

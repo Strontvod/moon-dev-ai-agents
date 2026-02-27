@@ -123,8 +123,8 @@ class WhaleAgent(BaseAgent):
             self.deepseek_client = None
             print(f"🎯 Moon Dev's Whale Agent using Claude model: {self.ai_model}!")
         
-        # Initialize Moon Dev API with correct base URL
-        self.api = MoonDevAPI(base_url="http://api.moondev.com:8000")
+        # Initialize Moon Dev API (v2 JSON endpoints)
+        self.api = MoonDevAPI()
         
         # Create data directories if they don't exist
         self.audio_dir = PROJECT_ROOT / "src" / "audio"
@@ -256,36 +256,76 @@ class WhaleAgent(BaseAgent):
         return f"{millions:.2f} million"
 
     def _get_current_oi(self):
-        """Get current open interest data from API"""
+        """Get current open interest data from Moon Dev API v2 (JSON endpoints)"""
         try:
             print("\n🔍 Fetching fresh OI data from API...")
-            df = self.api.get_oi_data()  # Changed from get_open_interest to get_oi_data
-            
-            if df is None:
+            df = self.api.get_oi_data()
+
+            if df is None or df.empty:
                 print("❌ Failed to get current OI data")
                 return None
-                
+
             print(f"✨ Successfully fetched {len(df)} OI records")
-            
-            # Process the latest data point for each symbol
-            if not df.empty:
-                # Get latest BTC and ETH data
-                btc_data = df[df['symbol'] == 'BTCUSDT'].iloc[-1]
-                eth_data = df[df['symbol'] == 'ETHUSDT'].iloc[-1]
-                
-                # Use the most recent timestamp between BTC and ETH
-                current_time = pd.to_datetime(max(btc_data['time'], eth_data['time']))
-                
-                # Calculate OI values (openInterest * price)
-                btc_oi = float(btc_data['openInterest']) * float(btc_data['price'])
-                eth_oi = float(eth_data['openInterest']) * float(eth_data['price'])
-                total_oi = btc_oi + eth_oi
-                
-                # Save the data point
-                self._save_oi_data(current_time, btc_oi, eth_oi, total_oi)
-                
+            df.columns = [c.lower() for c in df.columns]
+
+            # Detect symbol column — API may use 'coin', 'symbol', 'asset', etc.
+            sym_col = next((c for c in ['coin', 'symbol', 'asset', 'name'] if c in df.columns), None)
+            if sym_col is None:
+                print(f"⚠️ No symbol column found. Columns: {df.columns.tolist()}")
+                return None
+
+            # Find BTC and ETH rows (match both 'BTC' and 'BTCUSDT' style)
+            btc_mask = df[sym_col].astype(str).str.upper().isin(['BTC', 'BTCUSDT', 'BTCUSD'])
+            eth_mask = df[sym_col].astype(str).str.upper().isin(['ETH', 'ETHUSDT', 'ETHUSD'])
+
+            btc_rows = df[btc_mask]
+            eth_rows = df[eth_mask]
+
+            if btc_rows.empty or eth_rows.empty:
+                print(f"⚠️ Could not find BTC/ETH in OI data. Symbols: {df[sym_col].unique()[:20]}")
+                return None
+
+            # Detect OI column
+            oi_col = next((c for c in ['openinterest', 'open_interest', 'oi', 'sz',
+                                       'position_value', 'notional'] if c in df.columns), None)
+            # Detect price column
+            price_col = next((c for c in ['price', 'mark_price', 'markpx', 'mid_price',
+                                          'current_price'] if c in df.columns), None)
+
+            if oi_col is None:
+                print(f"⚠️ No OI column found. Columns: {df.columns.tolist()}")
+                return None
+
+            btc_oi_raw = float(btc_rows.iloc[-1][oi_col])
+            eth_oi_raw = float(eth_rows.iloc[-1][oi_col])
+
+            # If OI is in contracts (small number), multiply by price to get USD
+            if price_col and btc_oi_raw < 1_000_000:
+                btc_price = float(btc_rows.iloc[-1][price_col])
+                eth_price = float(eth_rows.iloc[-1][price_col])
+                btc_oi = btc_oi_raw * btc_price
+                eth_oi = eth_oi_raw * eth_price
+            else:
+                btc_oi = btc_oi_raw
+                eth_oi = eth_oi_raw
+
+            total_oi = btc_oi + eth_oi
+
+            # Detect timestamp
+            ts_col = next((c for c in ['time', 'timestamp', 'datetime', 'ts', 'updated_at']
+                           if c in df.columns), None)
+            if ts_col:
+                try:
+                    current_time = pd.to_datetime(btc_rows.iloc[-1][ts_col])
+                except Exception:
+                    current_time = pd.Timestamp.now()
+            else:
+                current_time = pd.Timestamp.now()
+
+            self._save_oi_data(current_time, btc_oi, eth_oi, total_oi)
+
             return self.oi_history
-            
+
         except Exception as e:
             print(f"❌ Error getting OI data: {str(e)}")
             print(f"Stack trace: {traceback.format_exc()}")

@@ -1,0 +1,49 @@
+STRATEGY_NAME: VolatileDivergence
+
+STRATEGY_DETAILS:
+
+**1. Key Strategy Components:**
+
+*   **Core Signal:** MACD Histogram Divergence (bullish for long entries, bearish for short entries). This indicates a potential shift in momentum despite price action.
+*   **Volatility Confirmation:** The strategy explicitly seeks out periods of heightened market volatility, confirmed by:
+    *   **Bollinger Band Expansion:** Indicating increased price movement and potential for a breakout or strong trend.
+    *   **Elevated Average True Range (ATR):** Confirming that market volatility is currently higher than usual, making the environment suitable for momentum plays.
+*   **Volume Confirmation:** A significant surge in trading volume concurrent with the divergence signal, validating the strength and conviction behind the potential price move.
+*   **Overall Approach:** This is a momentum-based strategy that uses a confluence of indicators to identify high-probability entries during periods of confirmed volatility, aiming to capture significant price movements following a divergence pattern.
+
+**2. Entry/Exit Rules:**
+
+*   **Long Entry:**
+    1.  **Bullish MACD Histogram Divergence:** Price makes a lower low, while the MACD Histogram makes a higher low. This suggests underlying buying pressure building despite falling prices.
+    2.  **Volume Confirmation:** Simultaneously, observe a noticeable surge in trading volume, indicating strong participation.
+    3.  **Volatility Confirmation:** Bollinger Bands must be visibly expanding, and the Average True Range (ATR) should be elevated compared to recent historical levels, confirming a volatile market environment.
+    4.  **Execution:** Enter a long position upon confirmation of all three conditions.
+
+*   **Short Entry:**
+    1.  **Bearish MACD Histogram Divergence:** Price makes a higher high, while the MACD Histogram makes a lower high. This suggests underlying selling pressure building despite rising prices.
+    2.  **Volume Confirmation:** Simultaneously, observe a noticeable surge in trading volume, indicating strong participation.
+    3.  **Volatility Confirmation:** Bollinger Bands must be visibly expanding, and the Average True Range (ATR) should be elevated compared to recent historical levels, confirming a volatile market environment.
+    4.  **Execution:** Enter a short position upon confirmation of all three conditions.
+
+*   **Exit Rules:**
+    *   **Profit Taking (Mean Reversion):** Exit the position when price shows strong signs of mean reversion. This could include:
+        *   Price retesting or crossing a significant moving average (e.g., the Bollinger Band middle line).
+        *   Price reaching the opposite Bollinger Band.
+        *   Loss of momentum as indicated by MACD histogram weakening or crossing zero.
+        *   Other pre-defined mean reversion criteria.
+    *   **Stop Loss (Trailing ATR Stop):** Implement a trailing stop loss based on a predefined multiple of the Average True Range (ATR) (e.g., 1.5x ATR or 2x ATR). The stop loss should adjust dynamically as the trade moves in a profitable direction, protecting gains while allowing for further upside/downside.
+
+**3. Risk Management:**
+
+*   **Initial Stop Loss Placement:** For long trades, place the initial stop loss below the low of the divergence pattern or a recent swing low. For short trades, place it above the high of the divergence pattern or a recent swing high.
+*   **Trailing ATR Stop:** The primary risk management tool for open positions is the trailing ATR stop. This ensures that profits are protected as the trade progresses and adapts to market volatility.
+*   **Position Sizing:** Calculate position size based on a fixed percentage of total trading capital per trade, using the initial stop loss distance. This prevents overexposure to any single trade.
+*   **Volatility Awareness:** The strategy inherently trades in volatile conditions. Traders must be prepared for larger price swings and potentially wider stop loss distances. The ATR component helps quantify and manage this.
+*   **Confirmation Filters:** The requirement for multiple confirmations (volume, BB expansion, elevated ATR) helps filter out lower-probability signals, thereby reducing overall trading risk.
+
+**4. Required Indicators:**
+
+*   **MACD (Moving Average Convergence Divergence):** Specifically, the **MACD Histogram** is crucial for identifying divergence patterns.
+*   **Volume Indicator:** To confirm price action with trading activity. This can be raw volume or a volume oscillator.
+*   **Bollinger Bands:** Used to identify periods of expansion and contraction, confirming volatility.
+*   **ATR (Average True Range):** Essential for gauging current volatility levels ("elevated ATR periods") and for setting dynamic trailing stop losses.

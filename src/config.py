@@ -6,6 +6,12 @@ Built with love by Moon Dev 🚀
 # 🔄 Exchange Selection
 EXCHANGE = 'hyperliquid'  # Options: 'solana', 'hyperliquid'
 
+# 🚦 Live Trading Gate
+# Set to True ONLY when you want real orders placed and background collectors running.
+# When False: strategy analysis runs (no LLM cost), but NO background data collection
+# and NO real trades are executed. Safe default for development / analysis mode.
+LIVE_TRADING = False  # ⚠️  Set True to enable live trading + background collectors
+
 # 💰 Trading Configuration
 USDC_ADDRESS = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"  # Never trade or close
 SOL_ADDRESS = "So11111111111111111111111111111111111111111"   # Never trade or close
@@ -100,6 +106,10 @@ AI_MODEL = "claude-haiku-4-5-20251001" # Model Options:
                                      # - claude-haiku-4-5-20251001 (Fast, cheap — ~10x less than Sonnet)
                                      # - claude-sonnet-4-6 (Balanced)
                                      # - claude-opus-4-6 (Most powerful)
+                                     # - moondev (🌙 MoonDev AI Chat API — uses MOONDEV_API_KEY, no extra cost!)
+                                     # - deepseek (DeepSeek R1 — cheap reasoning)
+                                     # - groq (Groq — free & fast)
+                                     # - openrouter (OpenRouter — 200+ models)
 AI_MAX_TOKENS = 300   # Max tokens for response (300 is plenty for Buy/Sell/Nothing)
 AI_TEMPERATURE = 0.7  # Creativity vs precision (0-1)
 

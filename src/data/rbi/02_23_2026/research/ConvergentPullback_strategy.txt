@@ -1,0 +1,61 @@
+STRATEGY_NAME: ConvergentPullback
+
+STRATEGY_DETAILS:
+This strategy, named "ConvergentPullback," is a trend-capturing system designed to enter trades on pullbacks within established, strong trends. It leverages the convergence of multiple Exponential Moving Averages (EMAs) for trend identification, the Average Directional Index (ADX) for trend strength validation, and the Volume Weighted Average Price (VWAP) for overall directional bias. Entries are precisely timed on pullbacks to the 21 EMA, while exits are managed by either an EMA crossover reversal or a trailing stop based on Average True Range (ATR).
+
+**1. Key Strategy Components:**
+
+*   **Multi-EMA System (8/21/55):**
+    *   The 8-period EMA serves as the fastest indicator, reacting quickly to price changes.
+    *   The 21-period EMA acts as the dynamic support/resistance level for pullback entries.
+    *   The 55-period EMA provides a longer-term trend perspective.
+    *   **Trend Identification:** A bullish trend is confirmed when 8 EMA > 21 EMA > 55 EMA. A bearish trend is confirmed when 8 EMA < 21 EMA < 55 EMA.
+*   **ADX (Average Directional Index):**
+    *   Used to confirm the strength of the trend. A reading above 25 indicates a strong, trending market suitable for this strategy.
+*   **VWAP (Volume Weighted Average Price):**
+    *   Provides a dynamic average price taking volume into account, acting as a key directional bias filter. For long trades, price should be above VWAP; for short trades, price should be below VWAP.
+*   **Pullback Entry:**
+    *   The core entry mechanism involves waiting for price to retrace to the 21 EMA during a confirmed trend before continuing in the trend's direction.
+
+**2. Entry/Exit Rules:**
+
+*   **Long Entry Rules:**
+    1.  **Trend Confirmation:** The 8 EMA is above the 21 EMA, which is above the 55 EMA (8 > 21 > 55).
+    2.  **Directional Bias:** The current price is trading above the VWAP.
+    3.  **Trend Strength:** The ADX indicator is above 25.
+    4.  **Pullback Trigger:** Price pulls back to touch or come very close to the 21 EMA.
+    5.  **Execution:** Enter a long position when price shows signs of rejecting the 21 EMA and resumes its upward movement (e.g., a bullish candle forming at the 21 EMA).
+*   **Short Entry Rules:**
+    1.  **Trend Confirmation:** The 8 EMA is below the 21 EMA, which is below the 55 EMA (8 < 21 < 55).
+    2.  **Directional Bias:** The current price is trading below the VWAP.
+    3.  **Trend Strength:** The ADX indicator is above 25.
+    4.  **Pullback Trigger:** Price pulls back to touch or come very close to the 21 EMA.
+    5.  **Execution:** Enter a short position when price shows signs of rejecting the 21 EMA and resumes its downward movement (e.g., a bearish candle forming at the 21 EMA).
+
+*   **Exit Rules:**
+    1.  **Primary Exit (EMA Crossover Reversal):**
+        *   For a long trade, exit when the 8 EMA crosses below the 21 EMA.
+        *   For a short trade, exit when the 8 EMA crosses above the 21 EMA.
+    2.  **Secondary Exit (Trailing Stop):**
+        *   Implement a 3x ATR (Average True Range) trailing stop. This stop loss dynamically adjusts as the trade moves in profit, locking in gains while allowing for further trend continuation.
+
+**3. Risk Management:**
+
+*   **Initial Stop Loss:** While not explicitly detailed, a logical initial stop loss for a pullback entry would be placed just beyond the swing low (for long) or swing high (for short) that formed during the pullback, or a fixed multiple of ATR (e.g., 1.5x ATR) from the entry price. This protects capital if the pullback fails.
+*   **Trailing Stop:** The 3x ATR trailing stop ensures that profits are protected and can be scaled up as the trend progresses.
+*   **Trend Strength Filter (ADX > 25):** By only trading in strong trends, the strategy reduces the likelihood of entering choppy or ranging markets, which are prone to whipsaws and false signals.
+*   **Directional Bias (VWAP):** Using VWAP as an additional filter aligns trades with the dominant market sentiment, further reducing risk from counter-trend moves.
+*   **Position Sizing:** (Recommended) Always apply proper position sizing based on a fixed percentage of capital per trade (e.g., 1-2%), calculated using the initial stop loss distance.
+
+**4. Required Indicators:**
+
+*   **Exponential Moving Averages (EMAs):**
+    *   8-period EMA
+    *   21-period EMA
+    *   55-period EMA
+*   **Average Directional Index (ADX):**
+    *   Standard settings (e.g., 14 periods). Key level: 25.
+*   **Volume Weighted Average Price (VWAP):**
+    *   Standard settings (typically calculated daily).
+*   **Average True Range (ATR):**
+    *   Standard settings (e.g., 14 periods) for calculating the trailing stop.

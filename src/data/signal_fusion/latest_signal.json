@@ -1,13 +1,19 @@
 {
-  "score": 0.0,
+  "score": -0.74,
   "direction": "NEUTRAL",
-  "confidence": 0.0,
+  "confidence": 20.0,
   "sources": {
     "sentiment": null,
-    "funding": null,
-    "oi": null,
-    "liquidation": null
+    "funding": 0.0,
+    "oi": 0.000684,
+    "liquidation": 0.0,
+    "smart_money": 0.1852,
+    "orderflow": -0.9783,
+    "hlp": -0.0,
+    "position_snapshot": -0.0008666666666666666,
+    "multi_liq": null,
+    "buyer_tracker": 1.0
   },
-  "timestamp": "2026-02-18T15:39:00.646983+00:00",
-  "active_sources": 0
+  "timestamp": "2026-02-27T02:23:39.109102+00:00",
+  "active_sources": 8
 }

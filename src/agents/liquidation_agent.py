@@ -176,39 +176,66 @@ class LiquidationAgent(BaseAgent):
             print(f"❌ Error loading history: {str(e)}")
             self.liquidation_history = pd.DataFrame(columns=['timestamp', 'long_size', 'short_size', 'total_size'])
             
+    def _return_empty_liq(self):
+        """Return empty liquidation tuple."""
+        return None, None
+
     def _get_current_liquidations(self):
-        """Get current liquidation data"""
+        """Get current liquidation data from Moon Dev API v2 (JSON endpoints)"""
         try:
             print("\n🔍 Fetching fresh liquidation data...")
-            df = self.api.get_liquidation_data(limit=LIQUIDATION_ROWS)
-            
+            df = self.api.get_liquidation_data(timeframe='1h')
+
             if df is not None and not df.empty:
-                # Set column names
-                df.columns = ['symbol', 'side', 'type', 'time_in_force', 
-                            'quantity', 'price', 'price2', 'status', 
-                            'filled_qty', 'total_qty', 'timestamp', 'usd_value']
-                
-                # Convert timestamp to datetime (UTC)
-                df['datetime'] = pd.to_datetime(df['timestamp'], unit='ms')
+                # Normalize column names (new JSON API may use different casing)
+                df.columns = [c.lower() for c in df.columns]
+
+                # Detect side column — SELL side = long liquidation, BUY side = short liquidation
+                if 'side' not in df.columns:
+                    print("⚠️ No 'side' column in liquidation data, skipping")
+                    return self._return_empty_liq()
+
+                # Detect USD value column
+                usd_col = next((c for c in ['usd_value', 'usd_size', 'size', 'notional', 'value', 'sz']
+                                if c in df.columns), None)
+                if usd_col is None:
+                    print(f"⚠️ No USD value column found. Columns: {df.columns.tolist()}")
+                    return self._return_empty_liq()
+
+                # Detect timestamp column
+                ts_col = next((c for c in ['timestamp', 'time', 'datetime', 'ts']
+                               if c in df.columns), None)
+                if ts_col:
+                    # Try multiple timestamp formats
+                    try:
+                        df['datetime'] = pd.to_datetime(df[ts_col], unit='ms')
+                    except (ValueError, TypeError):
+                        df['datetime'] = pd.to_datetime(df[ts_col], format='mixed', utc=False)
+                else:
+                    df['datetime'] = pd.Timestamp.now()
+
                 current_time = datetime.utcnow()
-                
+
                 # Calculate time windows
                 fifteen_min = current_time - timedelta(minutes=15)
                 one_hour = current_time - timedelta(hours=1)
                 four_hours = current_time - timedelta(hours=4)
-                
+
                 # Separate long and short liquidations
-                longs = df[df['side'] == 'SELL']  # SELL side = long liquidation
-                shorts = df[df['side'] == 'BUY']  # BUY side = short liquidation
-                
+                longs = df[df['side'].str.upper() == 'SELL']
+                shorts = df[df['side'].str.upper() == 'BUY']
+
+                # Ensure numeric
+                df[usd_col] = pd.to_numeric(df[usd_col], errors='coerce').fillna(0)
+
                 # Calculate totals for each time window and type
-                fifteen_min_longs = longs[longs['datetime'] >= fifteen_min]['usd_value'].sum()
-                fifteen_min_shorts = shorts[shorts['datetime'] >= fifteen_min]['usd_value'].sum()
-                one_hour_longs = longs[longs['datetime'] >= one_hour]['usd_value'].sum()
-                one_hour_shorts = shorts[shorts['datetime'] >= one_hour]['usd_value'].sum()
-                four_hour_longs = longs[longs['datetime'] >= four_hours]['usd_value'].sum()
-                four_hour_shorts = shorts[shorts['datetime'] >= four_hours]['usd_value'].sum()
-                
+                fifteen_min_longs = longs[longs['datetime'] >= fifteen_min][usd_col].sum()
+                fifteen_min_shorts = shorts[shorts['datetime'] >= fifteen_min][usd_col].sum()
+                one_hour_longs = longs[longs['datetime'] >= one_hour][usd_col].sum()
+                one_hour_shorts = shorts[shorts['datetime'] >= one_hour][usd_col].sum()
+                four_hour_longs = longs[longs['datetime'] >= four_hours][usd_col].sum()
+                four_hour_shorts = shorts[shorts['datetime'] >= four_hours][usd_col].sum()
+
                 # Get event counts
                 fifteen_min_long_events = len(longs[longs['datetime'] >= fifteen_min])
                 fifteen_min_short_events = len(shorts[shorts['datetime'] >= fifteen_min])
@@ -216,7 +243,7 @@ class LiquidationAgent(BaseAgent):
                 one_hour_short_events = len(shorts[shorts['datetime'] >= one_hour])
                 four_hour_long_events = len(longs[longs['datetime'] >= four_hours])
                 four_hour_short_events = len(shorts[shorts['datetime'] >= four_hours])
-                
+
                 # Calculate percentage change for active window
                 pct_change_longs = 0
                 pct_change_shorts = 0
@@ -231,7 +258,7 @@ class LiquidationAgent(BaseAgent):
                     else:
                         current_longs = fifteen_min_longs
                         current_shorts = fifteen_min_shorts
-                        
+
                     if 'long_size' in previous_record and previous_record['long_size'] > 0:
                         pct_change_longs = ((current_longs - previous_record['long_size']) / previous_record['long_size']) * 100
                     if 'short_size' in previous_record and previous_record['short_size'] > 0:

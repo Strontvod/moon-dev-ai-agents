@@ -29,7 +29,7 @@ def get_funding_rates() -> list[dict]:
     """Fetch current funding rates from Hyperliquid public API."""
     try:
         from hyperliquid.info import Info
-        import hyperliquid.constants as constants
+        import hyperliquid.utils.constants as constants
 
         info = Info(constants.MAINNET_API_URL, skip_ws=True)
         meta, asset_ctxs = info.meta_and_asset_ctxs()

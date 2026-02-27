@@ -1,0 +1,27 @@
+STRATEGY_NAME: Adaptive Divergence Volatility
+
+STRATEGY_DETAILS:
+This is an adaptive momentum strategy that combines MACD histogram divergence, volume surges, and Bollinger Band expansion during periods of elevated Average True Range (ATR). The key components are:
+
+Entry Rules:
+1. Look for bullish or bearish divergence between the MACD histogram and price action.
+2. Confirm the divergence with a surge in trading volume.
+3. Enter long on bullish divergence, short on bearish divergence.
+4. Entry triggers occur during periods where the Bollinger Bands are expanding, indicating increased market volatility.
+
+Exit Rules:
+1. Exit long/short positions when the MACD histogram crosses back towards the signal line, indicating mean reversion.
+2. Use a trailing ATR stop-loss to protect profits and limit downside during volatile market conditions.
+
+Risk Management:
+- Size positions based on account risk tolerance and volatility, e.g., 1-2% per trade.
+- Monitor the ATR and adjust position sizes accordingly - increase in high volatility, decrease in low volatility.
+- Utilize the trailing ATR stop-loss to dynamically manage risk.
+
+Indicators Required:
+- MACD histogram
+- Bollinger Bands
+- Average True Range (ATR)
+- Trading volume
+
+This "Adaptive Divergence Volatility" strategy aims to capture momentum during volatile market periods by identifying divergences confirmed by volume, while using the ATR to dynamically manage risk. The adaptive nature allows the strategy to perform well across different market conditions.

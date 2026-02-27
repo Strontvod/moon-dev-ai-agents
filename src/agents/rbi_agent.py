@@ -61,25 +61,25 @@ Remember: Past performance doesn't guarantee future results!
 #     "name": "deepseek-chat"  # Using DeepSeek Chat for package optimization
 # }
 
-# New OpenAI presets using GPT-5 for all agents 🌙🚀
+# Claude Haiku — reliable, cheap, no free-tier quota limits
 RESEARCH_CONFIG = {
-    "type": "openai",
-    "name": "gpt-5"
+    "type": "claude",
+    "name": "claude-3-haiku-20240307"
 }
 
 BACKTEST_CONFIG = {
-    "type": "openai",
-    "name": "gpt-5"
+    "type": "claude",
+    "name": "claude-3-haiku-20240307"
 }
 
 DEBUG_CONFIG = {
-    "type": "openai",
-    "name": "gpt-5"
+    "type": "claude",
+    "name": "claude-3-haiku-20240307"
 }
 
 PACKAGE_CONFIG = {
-    "type": "openai",
-    "name": "gpt-5"
+    "type": "claude",
+    "name": "claude-3-haiku-20240307"
 }
 
 
@@ -351,6 +351,10 @@ import sys
 import hashlib  # Added for idea hashing
 from src.config import *  # Import config settings including AI_MODEL
 from src.models import model_factory
+
+# Override config's tiny 300-token limit — RBI needs full code generation
+# claude-3-haiku-20240307 max is 4096
+AI_MAX_TOKENS = 4096
 
 # DeepSeek Configuration
 DEEPSEEK_BASE_URL = "https://api.deepseek.com"
@@ -626,16 +630,25 @@ def clean_model_output(output, content_type="text"):
         
         try:
             import re
-            # First look for python blocks
-            code_blocks = re.findall(r'```python\n(.*?)\n```', cleaned_output, re.DOTALL)
-            
-            # If no python blocks, try any code blocks
+            # Normalize line endings first
+            normalized = cleaned_output.replace('\r\n', '\n').replace('\r', '\n')
+
+            # Try python-tagged blocks (flexible whitespace after tag)
+            code_blocks = re.findall(r'```python[^\n]*\n(.*?)```', normalized, re.DOTALL)
+
+            # If no python blocks, try any fenced code blocks
             if not code_blocks:
-                code_blocks = re.findall(r'```(?:python)?\n(.*?)\n```', cleaned_output, re.DOTALL)
-                
+                code_blocks = re.findall(r'```[^\n]*\n(.*?)```', normalized, re.DOTALL)
+
+            # Last resort: if entire output starts with ``` strip the fences
+            if not code_blocks and normalized.startswith('```'):
+                stripped = re.sub(r'^```[^\n]*\n', '', normalized)
+                stripped = re.sub(r'\n?```\s*$', '', stripped)
+                if stripped.strip():
+                    code_blocks = [stripped]
+
             if code_blocks:
-                # Join multiple code blocks with newlines between them
-                cleaned_output = "\n\n".join(code_blocks)
+                cleaned_output = "\n\n".join(b.strip() for b in code_blocks)
                 cprint("✅ Successfully extracted code from markdown", "green")
             else:
                 cprint("⚠️ No code blocks found in markdown", "yellow")

@@ -1,0 +1,30 @@
+STRATEGY_NAME: Adaptive Trend Capture
+
+STRATEGY_DETAILS:
+This is an adaptive trend-following strategy that uses a combination of exponential moving averages (EMAs), the Average Directional Index (ADX), and Volume Weighted Average Price (VWAP) to identify and capitalize on trending market conditions.
+
+Key Strategy Components:
+1. EMA Crossovers: The strategy monitors the convergence of three EMAs - 8, 21, and 55 periods. This helps identify the overall trend direction and strength.
+2. ADX: The strategy requires the ADX indicator to be above 25, confirming a strong, established trend.
+3. VWAP: VWAP is used as a dynamic support/resistance level to provide directional bias and confirmation of the trend.
+
+Entry Rules:
+1. Identify a confirmed trend: EMA crossovers (8/21 and 21/55) in the same direction, with ADX above 25.
+2. Enter on pullbacks to the 21-period EMA during the confirmed trend.
+
+Exit Rules:
+1. EMA Crossover Reversal: Exit the position when the 8 and 21 EMAs cross in the opposite direction of the original trend.
+2. 3x ATR Trailing Stop: Use a 3x Average True Range (ATR) trailing stop to protect profits and limit downside risk.
+
+Risk Management:
+1. Position Sizing: Adjust position size based on account size and risk tolerance, typically 1-2% per trade.
+2. Stop Loss: Use the 3x ATR trailing stop to mitigate downside risk.
+3. Diversification: Apply this strategy across multiple uncorrelated markets/assets to reduce overall portfolio risk.
+
+Required Indicators:
+- 8, 21, and 55-period Exponential Moving Averages (EMAs)
+- Average Directional Index (ADX)
+- Volume Weighted Average Price (VWAP)
+- Average True Range (ATR)
+
+This adaptive trend-following strategy aims to capture sustained market trends by using a combination of trend-identifying tools and dynamic risk management techniques. The strategy's versatility and responsiveness to changing market conditions make it a potentially robust approach for traders seeking to profit from trending markets.

@@ -1,0 +1,2 @@
+timestamp,symbol,large_buy_count,large_buy_usd,accumulation_score,direction,source
+2026-02-27T02:03:56.742693+00:00,ETH,1,9275.4,1.0,ACCUMULATING,hl_fallback
