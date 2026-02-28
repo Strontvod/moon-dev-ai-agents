@@ -110,6 +110,7 @@ AI_MODEL = "claude-haiku-4-5-20251001" # Model Options:
                                      # - deepseek (DeepSeek R1 — cheap reasoning)
                                      # - groq (Groq — free & fast)
                                      # - openrouter (OpenRouter — 200+ models)
+                                     # - blackbox (Blackbox AI Cloud — multi-agent coding, bb_xxxx key)
 AI_MAX_TOKENS = 300   # Max tokens for response (300 is plenty for Buy/Sell/Nothing)
 AI_TEMPERATURE = 0.7  # Creativity vs precision (0-1)
 

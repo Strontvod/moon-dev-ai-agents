@@ -35,109 +35,24 @@ Remember: Past performance doesn't guarantee future results!
 """
 
 
-## Previous presets (kept for easy switching) 👇
-# RESEARCH_CONFIG = {
-#     "type": "deepseek",
-#     "name": "deepseek-chat"  # Using DeepSeek Chat for research
-# }
-# 
-# BACKTEST_CONFIG = {
-#     "type": "deepseek", 
-#     "name": "deepseek-reasoner"  # Using DeepSeek Reasoner for backtesting
-# }
-# 
-# DEBUG_CONFIG = {
-#     "type": "deepseek",
-#     "name": "deepseek-chat"  # Using DeepSeek Chat for debugging
-# }
-# 
-# # DEBUG_CONFIG = {
-# #     "type": "ollama",
-# #     "name": "deepseek-r1"  # Using Ollama's DeepSeek-R1 for debugging
-# # }
-# 
-# PACKAGE_CONFIG = {
-#     "type": "deepseek",
-#     "name": "deepseek-chat"  # Using DeepSeek Chat for package optimization
-# }
+# ============================================================================
+# MODEL CONFIGS — swap these to change which LLM handles each phase
+# ============================================================================
 
-# Claude Haiku — reliable, cheap, no free-tier quota limits
-RESEARCH_CONFIG = {
-    "type": "claude",
-    "name": "claude-3-haiku-20240307"
-}
+RESEARCH_CONFIG = {"type": "gemini", "name": "gemini-2.5-flash"}
+BACKTEST_CONFIG = {"type": "gemini", "name": "gemini-2.5-flash"}
+DEBUG_CONFIG    = {"type": "gemini", "name": "gemini-2.5-flash"}
+PACKAGE_CONFIG  = {"type": "gemini", "name": "gemini-2.5-flash"}
+OPTIMIZE_CONFIG = {"type": "gemini", "name": "gemini-2.5-flash"}
 
-BACKTEST_CONFIG = {
-    "type": "claude",
-    "name": "claude-3-haiku-20240307"
-}
+# ============================================================================
+# EXECUTION & OPTIMIZATION SETTINGS
+# ============================================================================
 
-DEBUG_CONFIG = {
-    "type": "claude",
-    "name": "claude-3-haiku-20240307"
-}
-
-PACKAGE_CONFIG = {
-    "type": "claude",
-    "name": "claude-3-haiku-20240307"
-}
-
-
-
-################
-
-# Model Configuration
-# Using a mix of Ollama models and DeepSeek API
-# RESEARCH_CONFIG = {
-#     "type": "ollama",
-#     "name": "llama3.2"  # Using Llama 3.2 for research
-# }
-
-# RESEARCH_CONFIG = {
-#     "type": "deepseek",
-#     "name": "deepseek-chat"  # Using Llama 3.2 for research
-# }
-
-# BACKTEST_CONFIG = {
-#     "type": "openai", 
-#     "name": "o3"  # Using O3-mini for backtesting
-# }
-
-# DEBUG_CONFIG = {
-#     "type": "openai",
-#     "name": "o3"  # Using GPT-4.1 for debugging
-# }
-
-# # DEBUG_CONFIG = {
-# #     "type": "ollama",
-# #     "name": "deepseek-r1"  # Using Ollama's DeepSeek-R1 for debugging
-# # }
-
-# # PACKAGE_CONFIG = {
-# #     "type": "deepseek",
-# #     "name": "deepseek-chat"  # Using Llama 3.2 for package optimization
-# # }
-
-# PACKAGE_CONFIG = {
-#     "type": "openai",
-#     "name": "o3"  # Using Llama 3.2 for package optimization
-# }
-
-
-# PACKAGE_CONFIG = {
-#     "type": "ollama",
-#     "name": "llama3.2"  # Using Llama 3.2 for package optimization
-# }
-
-
-# DeepSeek Model Selection per AI
-# "gemma:2b",     # Google's Gemma 2B model
-#         "llama3.2",
-# Using a mix of models for different tasks
-# RESEARCH_MODEL = "llama3.2"           # Llama 3.2 for research
-# BACKTEST_MODEL = "deepseek-reasoner"  # DeepSeek API for backtesting
-# DEBUG_MODEL = "deepseek-r1"           # Ollama DeepSeek-R1 for debugging
-# PACKAGE_MODEL = "llama3.2"            # Llama 3.2 for package optimization
+TARGET_RETURN = 50              # % return the optimizer chases
+MAX_DEBUG_ITERATIONS = 10       # max debug retries before giving up
+MAX_OPTIMIZATION_ITERATIONS = 10  # max optimize loops after a working run
+EXECUTION_TIMEOUT = 300         # seconds per backtest subprocess
 
 # AI Prompts
 
@@ -183,8 +98,9 @@ Remember: The name must be UNIQUE and SPECIFIC to this strategy's approach!
 
 BACKTEST_PROMPT = """
 You are Moon Dev's Backtest AI 🌙 ONLY SEND BACK CODE, NO OTHER TEXT.
-Create a backtesting.py implementation for the strategy.
-USE BACKTESTING.PY
+Create an implementation using the backtesting.py library (pip package name: backtesting).
+IMPORTANT: Use "from backtesting import Backtest, Strategy" — DO NOT use backtrader.
+DO NOT import backtrader. The library is backtesting.py, NOT backtrader.
 Include:
 1. All necessary imports
 2. Strategy class with indicators
@@ -243,7 +159,8 @@ datetime, open, high, low, close, volume,
 2023-01-01 00:00:00, 16531.83, 16532.69, 16509.11, 16510.82, 231.05338022,
 2023-01-01 00:15:00, 16509.78, 16534.66, 16509.11, 16533.43, 308.12276951,
 
-Always add plenty of Moon Dev themed debug prints with emojis to make debugging easier! 🌙 ✨ 🚀
+Add Moon Dev themed debug prints. Keep emojis OUTSIDE of f-string curly braces.
+Example: f"🌙 Moon Dev: Price = {{current_price:.2f}}" — emojis go outside the braces.
 
 FOR THE PYTHON BACKTESTING LIBRARY USE BACKTESTING.PY AND SEND BACK ONLY THE CODE, NO OTHER TEXT.
 ONLY SEND BACK CODE, NO OTHER TEXT.
@@ -321,6 +238,83 @@ Return the complete fixed code with proper Moon Dev themed debug prints! 🌙 �
 ONLY SEND BACK CODE, NO OTHER TEXT.
 """
 
+OPTIMIZE_PROMPT = """
+You are Moon Dev's Optimization AI 🌙
+The strategy below runs but has not hit the target return.
+
+CURRENT PERFORMANCE:
+Return [%]: {current_return}%
+TARGET RETURN: {target_return}%
+
+Improve the strategy to get closer to the target return. Try these techniques:
+1. Entry optimization: tighten or loosen entry conditions
+2. Exit optimization: better take-profit / stop-loss levels
+3. Risk management: adjust position sizing
+4. Indicator tuning: change periods, thresholds
+5. Market regime filter: add trend/volatility filter to avoid bad trades
+
+RULES:
+- Use "from backtesting import Backtest, Strategy" — DO NOT use backtrader
+- Keep using backtesting.py and talib/pandas_ta
+- Keep self.I() wrappers for all indicators
+- Keep int position sizes
+- Keep print(stats) as the last line
+- DO NOT add charts or plotting
+
+ONLY SEND BACK CODE, NO OTHER TEXT.
+"""
+
+DEBUG_PROMPT_WITH_ERROR = """
+You are Moon Dev's Debug AI 🌙
+Fix the backtest code based on this error:
+
+ERROR:
+{error_message}
+
+CRITICAL RULES:
+1. Use "from backtesting import Backtest, Strategy" — DO NOT use backtrader. Never import backtrader.
+2. Data must be loaded BEFORE the Strategy class definition
+3. Position sizes must be int (use int(round(...)))
+4. Use self.I() for ALL indicator calculations
+5. Do NOT use .shift() on indicator arrays — use array indexing [-1], [-2]
+6. The backtesting.py position object has NO .entry_price attribute.
+   Use self.trades[-1].entry_price if you need entry price.
+7. Stop loss / take profit must be absolute price levels, not distances.
+8. Keep print(stats) as the last line.
+9. Do NOT use emojis inside f-string braces. Keep emojis outside the curly braces.
+   WRONG: f"{{🌙}} price is {{price}}"
+   RIGHT: f"🌙 price is {{price}}"
+10. Avoid non-ASCII characters in f-string expressions entirely.
+
+ONLY SEND BACK CODE, NO OTHER TEXT.
+"""
+
+NO_TRADES_DEBUG_PROMPT = """
+You are Moon Dev's Debug AI 🌙
+The backtest code ran without errors but produced ZERO trades.
+
+PROBLEM:
+The entry conditions are too restrictive for the dataset. The strategy never triggered a buy or sell.
+
+YOUR TASK — make the strategy actually trade by loosening entry conditions:
+1. If RSI thresholds are used, widen them (e.g., oversold 30→40, overbought 70→60)
+2. If SMA period is very long (e.g., 200), shorten it (e.g., 50 or 100)
+3. If multiple conditions must ALL be true (AND logic), consider removing the weakest filter
+4. If ATR multipliers are used for stops, keep them but don't let them prevent entry
+5. Add a debug print at the top of next() showing current indicator values so we can see what's happening
+6. Make sure the strategy will realistically trigger on 15-minute BTC candle data spanning ~2 years
+
+CRITICAL RULES:
+- Use "from backtesting import Backtest, Strategy" — DO NOT use backtrader
+- Position sizes must be int (use int(round(...)))
+- Use self.I() for ALL indicator calculations
+- Keep print(stats) as the last line
+- Do NOT use emojis inside f-string braces
+- The goal is to get trades happening, then we can optimize later
+
+ONLY SEND BACK CODE, NO OTHER TEXT.
+"""
+
 def get_model_id(model):
     """Get DR/DC identifier based on model"""
     return "DR" if model == "deepseek-reasoner" else "DC"
@@ -348,13 +342,16 @@ from pathlib import Path
 import threading
 import itertools
 import sys
-import hashlib  # Added for idea hashing
+import hashlib
+import subprocess
+import json
 from src.config import *  # Import config settings including AI_MODEL
 from src.models import model_factory
+from src.agents.strategy_scorer import parse_backtest_stats, has_nan_results, score_strategy, update_leaderboard
 
 # Override config's tiny 300-token limit — RBI needs full code generation
-# claude-3-haiku-20240307 max is 4096
-AI_MAX_TOKENS = 4096
+# claude-sonnet-4-5 supports 8192 output tokens
+AI_MAX_TOKENS = 8192
 
 # DeepSeek Configuration
 DEEPSEEK_BASE_URL = "https://api.deepseek.com"
@@ -370,11 +367,14 @@ RESEARCH_DIR = TODAY_DIR / "research"
 BACKTEST_DIR = TODAY_DIR / "backtests"
 PACKAGE_DIR = TODAY_DIR / "backtests_package"
 FINAL_BACKTEST_DIR = TODAY_DIR / "backtests_final"
-CHARTS_DIR = TODAY_DIR / "charts"  # New directory for HTML charts
-PROCESSED_IDEAS_LOG = DATA_DIR / "processed_ideas.log"  # New file to track processed ideas
+OPTIMIZED_DIR = TODAY_DIR / "backtests_optimized"
+CHARTS_DIR = TODAY_DIR / "charts"
+EXECUTION_DIR = TODAY_DIR / "execution_results"
+PROCESSED_IDEAS_LOG = DATA_DIR / "processed_ideas.log"
 
 # Create main directories if they don't exist
-for directory in [DATA_DIR, TODAY_DIR, RESEARCH_DIR, BACKTEST_DIR, PACKAGE_DIR, FINAL_BACKTEST_DIR, CHARTS_DIR]:
+for directory in [DATA_DIR, TODAY_DIR, RESEARCH_DIR, BACKTEST_DIR, PACKAGE_DIR,
+                  FINAL_BACKTEST_DIR, OPTIMIZED_DIR, CHARTS_DIR, EXECUTION_DIR]:
     directory.mkdir(parents=True, exist_ok=True)
 
 cprint(f"📂 Using RBI data directory: {DATA_DIR}")
@@ -425,16 +425,36 @@ def init_anthropic_client():
         return None
 
 def chat_with_model(system_prompt, user_content, model_config):
-    """Chat with AI model using model factory"""
+    """Chat with AI model using model factory (or direct Anthropic client for Sonnet key)"""
     try:
-        # Initialize model using factory with specific config
-        model = model_factory.get_model(model_config["type"], model_config["name"])
-        if not model:
-            raise ValueError(f"🚨 Could not initialize {model_config['type']} {model_config['name']} model!")
+        model_name = model_config["name"]
+        model_type = model_config["type"]
 
-        cprint(f"🤖 Using {model_config['type']} model: {model_config['name']}", "cyan")
+        # Use dedicated Sonnet API key for sonnet/opus models that need it
+        sonnet_key = os.getenv("ANTHROPIC_KEY_SONNET")
+        if model_type == "claude" and "sonnet" in model_name and sonnet_key and Anthropic:
+            cprint(f"🤖 Using direct Anthropic client: {model_name} (ANTHROPIC_KEY_SONNET)", "cyan")
+            cprint("🌟 Moon Dev's RBI AI is thinking...", "yellow")
+            cprint(f"📝 System prompt length: {len(system_prompt)} chars", "cyan")
+            cprint(f"📝 User content length: {len(user_content)} chars", "cyan")
+            client = Anthropic(api_key=sonnet_key)
+            response = client.messages.create(
+                model=model_name,
+                max_tokens=AI_MAX_TOKENS,
+                temperature=AI_TEMPERATURE,
+                system=system_prompt,
+                messages=[{"role": "user", "content": user_content}]
+            )
+            return response.content[0].text.strip()
+
+        # Initialize model using factory with specific config
+        model = model_factory.get_model(model_type, model_name)
+        if not model:
+            raise ValueError(f"🚨 Could not initialize {model_type} {model_name} model!")
+
+        cprint(f"🤖 Using {model_type} model: {model_name}", "cyan")
         cprint("🌟 Moon Dev's RBI AI is thinking...", "yellow")
-        
+
         # Debug prints for prompt lengths
         cprint(f"📝 System prompt length: {len(system_prompt)} chars", "cyan")
         cprint(f"📝 User content length: {len(user_content)} chars", "cyan")
@@ -443,7 +463,7 @@ def chat_with_model(system_prompt, user_content, model_config):
             cprint(f"🧪 OpenAI model in use: {model.model_name}", "cyan")
 
         # For Ollama models, handle response differently
-        if model_config["type"] == "ollama":
+        if model_type == "ollama":
             response = model.generate_response(
                 system_prompt=system_prompt,
                 user_content=user_content,
@@ -717,7 +737,7 @@ def research_strategy(content):
         
         # Save research output
         filepath = RESEARCH_DIR / f"{strategy_name}_strategy.txt"
-        with open(filepath, 'w') as f:
+        with open(filepath, 'w', encoding='utf-8') as f:
             f.write(output)
         cprint(f"📝 Research AI found something spicy! Saved to {filepath} 🌶️", "green")
         cprint(f"🏷️ Generated strategy name: {strategy_name}", "yellow")
@@ -751,7 +771,7 @@ def create_backtest(strategy, strategy_name="UnknownStrategy"):
                 output = str(output)
         
         filepath = BACKTEST_DIR / f"{strategy_name}_BT.py"
-        with open(filepath, 'w') as f:
+        with open(filepath, 'w', encoding='utf-8') as f:
             f.write(output)
         cprint(f"🔥 Backtest AI cooked up some heat! Saved to {filepath} 🚀", "green")
         return output
@@ -788,7 +808,7 @@ def debug_backtest(backtest_code, strategy=None, strategy_name="UnknownStrategy"
                 output = str(output)
             
         filepath = FINAL_BACKTEST_DIR / f"{strategy_name}_BTFinal.py"
-        with open(filepath, 'w') as f:
+        with open(filepath, 'w', encoding='utf-8') as f:
             f.write(output)
         cprint(f"🔧 Debug AI fixed the code! Saved to {filepath} ✨", "green")
         return output
@@ -821,11 +841,164 @@ def package_check(backtest_code, strategy_name="UnknownStrategy"):
                 output = str(output)
             
         filepath = PACKAGE_DIR / f"{strategy_name}_PKG.py"
-        with open(filepath, 'w') as f:
+        with open(filepath, 'w', encoding='utf-8') as f:
             f.write(output)
         cprint(f"📦 Package AI optimized the imports! Saved to {filepath} ✨", "green")
         return output
     return None
+
+
+# ============================================================================
+# EXECUTION & OPTIMIZATION (merged from rbi_agent_v3)
+# ============================================================================
+
+def execute_backtest(file_path, strategy_name="Unknown"):
+    """Run a backtest .py file as a subprocess and capture output."""
+    cprint(f"\n⚡ Executing backtest: {file_path}", "cyan")
+    start_time = time.time()
+
+    try:
+        # Force UTF-8 encoding in subprocess to handle emojis in LLM-generated print statements
+        env = os.environ.copy()
+        env["PYTHONIOENCODING"] = "utf-8"
+        result = subprocess.run(
+            [sys.executable, str(file_path)],
+            capture_output=True, text=True,
+            timeout=EXECUTION_TIMEOUT,
+            cwd=str(PROJECT_ROOT.parent),  # run from repo root
+            env=env,
+        )
+        execution_time = time.time() - start_time
+
+        output = {
+            "success": result.returncode == 0,
+            "return_code": result.returncode,
+            "stdout": result.stdout,
+            "stderr": result.stderr,
+            "execution_time": execution_time,
+            "timestamp": datetime.now().isoformat(),
+        }
+
+        # Save execution result JSON
+        ts = datetime.now().strftime("%H%M%S")
+        json_file = EXECUTION_DIR / f"{strategy_name}_{ts}.json"
+        with open(json_file, "w", encoding="utf-8") as f:
+            json.dump(output, f, indent=2)
+
+        if output["success"]:
+            cprint(f"  Backtest ran OK in {execution_time:.1f}s", "green")
+        else:
+            cprint(f"  Backtest FAILED (exit code {result.returncode})", "red")
+            if result.stderr:
+                # Show last 5 lines of stderr
+                err_lines = result.stderr.strip().split("\n")
+                for line in err_lines[-5:]:
+                    cprint(f"    {line}", "red")
+
+        return output
+
+    except subprocess.TimeoutExpired:
+        cprint(f"  Backtest TIMED OUT after {EXECUTION_TIMEOUT}s", "red")
+        return {"success": False, "return_code": -1, "stdout": "", "stderr": "Timeout", "execution_time": EXECUTION_TIMEOUT, "timestamp": datetime.now().isoformat()}
+    except Exception as e:
+        cprint(f"  Execution error: {e}", "red")
+        return {"success": False, "return_code": -1, "stdout": "", "stderr": str(e), "execution_time": 0, "timestamp": datetime.now().isoformat()}
+
+
+def analyze_no_trades_issue(execution_result):
+    """Build a diagnostic message when backtest produces 0 trades."""
+    # Include last 30 lines of stdout for context (indicator values, data info)
+    stdout_tail = ""
+    if execution_result.get("stdout"):
+        lines = execution_result["stdout"].strip().split("\n")
+        stdout_tail = "\n".join(lines[-30:])
+    return (
+        "The backtest ran without errors but took ZERO trades. "
+        "Entry conditions are too strict for this dataset.\n\n"
+        f"STDOUT (last 30 lines):\n{stdout_tail}"
+    )
+
+
+def debug_backtest_with_error(backtest_code, error_message, strategy_name="Unknown", iteration=1):
+    """Debug a backtest using the actual error message (v3-style)."""
+    cprint(f"\n🔧 Debug AI (iteration {iteration})...", "cyan")
+
+    prompt = DEBUG_PROMPT_WITH_ERROR.format(error_message=error_message)
+
+    output = run_with_animation(
+        chat_with_model,
+        f"Debug AI v{iteration}",
+        prompt,
+        f"Fix this backtest code:\n\n{backtest_code}",
+        DEBUG_CONFIG,
+    )
+
+    if output:
+        output = clean_model_output(output, "code")
+        if not isinstance(output, str):
+            output = str(output) if output else ""
+        filepath = FINAL_BACKTEST_DIR / f"{strategy_name}_BTFinal_v{iteration}.py"
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write(output)
+        cprint(f"  Debug v{iteration} saved: {filepath}", "green")
+        return output, str(filepath)
+    return None, None
+
+
+def debug_no_trades(backtest_code, diagnostic_msg, strategy_name="Unknown", iteration=1):
+    """Debug a backtest that produces 0 trades — uses specialized loosening prompt."""
+    cprint(f"\n🔧 No-Trades Debug AI (iteration {iteration})...", "cyan")
+
+    prompt = NO_TRADES_DEBUG_PROMPT
+
+    output = run_with_animation(
+        chat_with_model,
+        f"No-Trades Debug v{iteration}",
+        prompt,
+        f"This backtest produced 0 trades. Loosen the conditions.\n\nDIAGNOSTIC:\n{diagnostic_msg}\n\nCODE:\n{backtest_code}",
+        DEBUG_CONFIG,
+    )
+
+    if output:
+        output = clean_model_output(output, "code")
+        if not isinstance(output, str):
+            output = str(output) if output else ""
+        filepath = FINAL_BACKTEST_DIR / f"{strategy_name}_BTFinal_v{iteration}.py"
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write(output)
+        cprint(f"  No-trades debug v{iteration} saved: {filepath}", "green")
+        return output, str(filepath)
+    return None, None
+
+
+def optimize_strategy(backtest_code, current_return, target_return, strategy_name="Unknown", iteration=1):
+    """Optimize a working backtest to improve returns."""
+    cprint(f"\n🎯 Optimization AI (iteration {iteration}, current: {current_return:.1f}%, target: {target_return}%)...", "cyan")
+
+    prompt = OPTIMIZE_PROMPT.format(
+        current_return=current_return,
+        target_return=target_return,
+    )
+
+    output = run_with_animation(
+        chat_with_model,
+        f"Optimize AI v{iteration}",
+        prompt,
+        f"Optimize this backtest code:\n\n{backtest_code}",
+        OPTIMIZE_CONFIG,
+    )
+
+    if output:
+        output = clean_model_output(output, "code")
+        if not isinstance(output, str):
+            output = str(output) if output else ""
+        filepath = OPTIMIZED_DIR / f"{strategy_name}_OPT_v{iteration}.py"
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write(output)
+        cprint(f"  Optimized v{iteration} saved: {filepath}", "green")
+        return output, str(filepath)
+    return None, None
+
 
 def get_idea_content(idea_url: str) -> str:
     """Extract content from a trading idea URL or text"""
@@ -876,7 +1049,7 @@ def is_idea_processed(idea: str) -> bool:
         
     idea_hash = get_idea_hash(idea)
     
-    with open(PROCESSED_IDEAS_LOG, 'r') as f:
+    with open(PROCESSED_IDEAS_LOG, 'r', encoding='utf-8') as f:
         processed_hashes = [line.strip().split(',')[0] for line in f if line.strip()]
         
     return idea_hash in processed_hashes
@@ -889,12 +1062,12 @@ def log_processed_idea(idea: str, strategy_name: str = "Unknown") -> None:
     # Create the log file if it doesn't exist
     if not PROCESSED_IDEAS_LOG.exists():
         PROCESSED_IDEAS_LOG.parent.mkdir(parents=True, exist_ok=True)
-        with open(PROCESSED_IDEAS_LOG, 'w') as f:
+        with open(PROCESSED_IDEAS_LOG, 'w', encoding='utf-8') as f:
             f.write("# Moon Dev's RBI AI - Processed Ideas Log 🌙\n")
             f.write("# Format: hash,timestamp,strategy_name,idea_snippet\n")
     
     # Append the processed idea to the log
-    with open(PROCESSED_IDEAS_LOG, 'a') as f:
+    with open(PROCESSED_IDEAS_LOG, 'a', encoding='utf-8') as f:
         # Truncate idea if too long for the log
         idea_snippet = idea[:100] + ('...' if len(idea) > 100 else '')
         f.write(f"{idea_hash},{timestamp},{strategy_name},{idea_snippet}\n")
@@ -902,85 +1075,166 @@ def log_processed_idea(idea: str, strategy_name: str = "Unknown") -> None:
     cprint(f"📝 Idea logged as processed: {idea_hash}", "green")
 
 def process_trading_idea(idea: str) -> None:
-    """Process a single trading idea completely independently"""
-    print("\n🚀 Moon Dev's RBI AI Processing New Idea!")
-    print("🌟 Let's find some alpha in the chaos!")
-    print(f"📝 Processing idea: {idea[:100]}...")
-    print(f"📅 Saving results to today's folder: {TODAY_DATE}")
-    
+    """Process a single trading idea: research → backtest → execute → optimize."""
+    cprint("\n🚀 Moon Dev's RBI AI Processing New Idea!", "green")
+    cprint(f"📝 Processing: {idea[:100]}...", "yellow")
+    cprint(f"📅 Output folder: {TODAY_DATE}", "yellow")
+
     try:
-        # Step 1: Extract content from the idea
+        # Step 1: Extract content
         idea_content = get_idea_content(idea)
         if not idea_content:
-            print("❌ Failed to extract content from idea!")
+            cprint("❌ Failed to extract content!", "red")
             return
-            
-        print(f"📄 Extracted content length: {len(idea_content)} characters")
-        
-        # Phase 1: Research with isolated content
-        print("\n🧪 Phase 1: Research")
+
+        # Phase 1: Research
+        cprint("\n🧪 Phase 1: Research", "cyan")
         strategy, strategy_name = research_strategy(idea_content)
-        
         if not strategy:
-            print("❌ Research phase failed!")
+            cprint("❌ Research phase failed!", "red")
             return
-            
-        print(f"🏷️ Strategy Name: {strategy_name}")
-        
-        # Log the idea as processed once we have a strategy name
         log_processed_idea(idea, strategy_name)
-        
-        # Save research output
-        research_file = RESEARCH_DIR / f"{strategy_name}_strategy.txt"
-        with open(research_file, 'w') as f:
-            f.write(strategy)
-            
-        # Phase 2: Backtest using only the research output
-        print("\n📈 Phase 2: Backtest")
+
+        # Phase 2: Backtest code generation
+        cprint("\n📈 Phase 2: Backtest", "cyan")
         backtest = create_backtest(strategy, strategy_name)
-        
         if not backtest:
-            print("❌ Backtest phase failed!")
+            cprint("❌ Backtest phase failed!", "red")
             return
-            
-        # Save backtest output
-        backtest_file = BACKTEST_DIR / f"{strategy_name}_BT.py"
-        with open(backtest_file, 'w') as f:
-            f.write(backtest)
-            
-        # Phase 3: Package Check using only the backtest code
-        print("\n📦 Phase 3: Package Check")
+
+        # Phase 3: Package check
+        cprint("\n📦 Phase 3: Package Check", "cyan")
         package_checked = package_check(backtest, strategy_name)
-        
         if not package_checked:
-            print("❌ Package check failed!")
+            cprint("❌ Package check failed!", "red")
             return
-            
-        # Save package check output
-        package_file = PACKAGE_DIR / f"{strategy_name}_PKG.py"
-        with open(package_file, 'w') as f:
-            f.write(package_checked)
-            
-        # Phase 4: Debug using only the package-checked code
-        print("\n🔧 Phase 4: Debug")
-        final_backtest = debug_backtest(package_checked, strategy, strategy_name)
-        
-        if not final_backtest:
-            print("❌ Debug phase failed!")
+
+        # Phase 4: Initial debug pass
+        cprint("\n🔧 Phase 4: Debug", "cyan")
+        current_code = debug_backtest(package_checked, strategy, strategy_name)
+        if not current_code:
+            cprint("❌ Debug phase failed!", "red")
             return
-            
-        # Save final backtest
-        final_file = FINAL_BACKTEST_DIR / f"{strategy_name}_BTFinal.py"
-        with open(final_file, 'w') as f:
-            f.write(final_backtest)
-            
-        print("\n🎉 Mission Accomplished!")
-        print(f"🚀 Strategy '{strategy_name}' is ready to make it rain! 💸")
-        print(f"✨ Final backtest saved at: {final_file}")
-        
+
+        current_file = str(FINAL_BACKTEST_DIR / f"{strategy_name}_BTFinal.py")
+
+        # Phase 5: EXECUTION + DEBUG LOOP
+        cprint("\n⚡ Phase 5: Execute & Debug Loop", "cyan")
+        last_error = None
+        best_return = None
+        best_code = current_code
+        best_file = current_file
+
+        for debug_iter in range(1, MAX_DEBUG_ITERATIONS + 1):
+            result = execute_backtest(current_file, strategy_name)
+
+            if result["success"]:
+                stats = parse_backtest_stats(result["stdout"])
+
+                if has_nan_results(stats):
+                    # Ran but no trades — use specialized no-trades prompt
+                    cprint(f"  Iteration {debug_iter}: 0 trades, loosening conditions...", "yellow")
+                    diagnostic = analyze_no_trades_issue(result)
+                    new_code, new_file = debug_no_trades(
+                        current_code, diagnostic, strategy_name, debug_iter
+                    )
+                    if new_code:
+                        current_code, current_file = new_code, new_file
+                    continue
+
+                # We have real results — parse return
+                current_return = stats.get("return_pct") or 0.0
+                cprint(f"  Iteration {debug_iter}: Return = {current_return:.1f}%", "green")
+
+                if best_return is None or current_return > best_return:
+                    best_return = current_return
+                    best_code = current_code
+                    best_file = current_file
+
+                if current_return >= TARGET_RETURN:
+                    cprint(f"  TARGET HIT! {current_return:.1f}% >= {TARGET_RETURN}%", "green", attrs=["bold"])
+                    # Save winning file
+                    win_file = OPTIMIZED_DIR / f"{strategy_name}_TARGET_HIT_{int(current_return)}pct.py"
+                    with open(win_file, "w", encoding="utf-8") as f:
+                        f.write(current_code)
+                    # Update leaderboard
+                    update_leaderboard(strategy_name, stats, str(win_file))
+                    break
+
+                # Haven't hit target — enter optimization loop
+                cprint(f"\n🎯 Phase 6: Optimization Loop (best so far: {best_return:.1f}%)", "cyan")
+                for opt_iter in range(1, MAX_OPTIMIZATION_ITERATIONS + 1):
+                    opt_code, opt_file = optimize_strategy(
+                        current_code, best_return, TARGET_RETURN, strategy_name, opt_iter
+                    )
+                    if not opt_code:
+                        cprint(f"  Optimization {opt_iter} failed, stopping", "yellow")
+                        break
+
+                    opt_result = execute_backtest(opt_file, strategy_name)
+                    if opt_result["success"]:
+                        opt_stats = parse_backtest_stats(opt_result["stdout"])
+                        opt_return = opt_stats.get("return_pct") or 0.0
+                        cprint(f"  Opt {opt_iter}: Return = {opt_return:.1f}%", "cyan")
+
+                        if opt_return > best_return:
+                            best_return = opt_return
+                            best_code = opt_code
+                            best_file = opt_file
+                            current_code = opt_code
+                            current_file = opt_file
+
+                        if opt_return >= TARGET_RETURN:
+                            cprint(f"  TARGET HIT via optimization! {opt_return:.1f}%", "green", attrs=["bold"])
+                            win_file = OPTIMIZED_DIR / f"{strategy_name}_TARGET_HIT_{int(opt_return)}pct.py"
+                            with open(win_file, "w", encoding="utf-8") as f:
+                                f.write(opt_code)
+                            update_leaderboard(strategy_name, opt_stats, str(win_file))
+                            break
+                    else:
+                        cprint(f"  Opt {opt_iter} execution failed, skipping", "yellow")
+
+                # After optimization loop, save best and update leaderboard
+                if best_return is not None and best_return > 0:
+                    best_save = OPTIMIZED_DIR / f"{strategy_name}_BEST_{int(best_return)}pct.py"
+                    with open(best_save, "w", encoding="utf-8") as f:
+                        f.write(best_code)
+                    # Re-parse best stats for leaderboard
+                    best_result = execute_backtest(str(best_save), strategy_name)
+                    if best_result["success"]:
+                        best_stats = parse_backtest_stats(best_result["stdout"])
+                        update_leaderboard(strategy_name, best_stats, str(best_save))
+                break  # exit debug loop — we got a working run
+
+            else:
+                # Execution failed — debug with error
+                error_msg = result["stderr"][-2000:] if result["stderr"] else "Unknown error"
+
+                # Guard against infinite loop on same error
+                if error_msg == last_error:
+                    cprint(f"  Same error repeated, stopping debug loop", "red")
+                    break
+                last_error = error_msg
+
+                cprint(f"  Iteration {debug_iter}: execution failed, re-debugging...", "yellow")
+                new_code, new_file = debug_backtest_with_error(
+                    current_code, error_msg, strategy_name, debug_iter
+                )
+                if new_code:
+                    current_code, current_file = new_code, new_file
+                else:
+                    cprint("  Debug AI returned nothing, stopping", "red")
+                    break
+
+        cprint(f"\n🎉 RBI pipeline complete for '{strategy_name}'!", "green")
+        if best_return is not None:
+            cprint(f"  Best return achieved: {best_return:.1f}%", "green")
+        cprint(f"  Best file: {best_file}", "green")
+
     except Exception as e:
-        print(f"\n❌ Error processing idea: {str(e)}")
-        raise
+        cprint(f"\n❌ Error processing idea: {str(e)}", "red")
+        import traceback
+        traceback.print_exc()
 
 def main():
     """Main function to process ideas from file"""
@@ -990,12 +1244,12 @@ def main():
     if not ideas_file.exists():
         cprint("❌ ideas.txt not found! Creating template...", "red")
         ideas_file.parent.mkdir(parents=True, exist_ok=True)
-        with open(ideas_file, 'w') as f:
+        with open(ideas_file, 'w', encoding='utf-8') as f:
             f.write("# Add your trading ideas here (one per line)\n")
             f.write("# Can be YouTube URLs, PDF links, or text descriptions\n")
         return
         
-    with open(ideas_file, 'r') as f:
+    with open(ideas_file, 'r', encoding='utf-8') as f:
         ideas = [line.strip() for line in f if line.strip() and not line.startswith('#')]
         
     total_ideas = len(ideas)

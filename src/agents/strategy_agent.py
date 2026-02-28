@@ -82,23 +82,46 @@ class StrategyAgent:
             cprint("✅ Strategy Agent using direct nice_funcs", "green")
         
         if ENABLE_STRATEGIES:
-            try:
-                # Import strategies directly
-                # Load DivergenceVolatility — best confirmed strategy (Sharpe 2.14)
-                from src.strategies.custom.divergence_volatility_strategy import DivergenceVolatilityStrategy
-                self.enabled_strategies.append(DivergenceVolatilityStrategy())
-                cprint(f"✅ Loaded 1 strategies: DivergenceVolatilityStrategy", "green")
-                
-                print(f"✅ Loaded {len(self.enabled_strategies)} strategies!")
-                for strategy in self.enabled_strategies:
-                    print(f"  • {strategy.name}")
-                    
-            except Exception as e:
-                print(f"⚠️ Error loading strategies: {e}")
+            self._load_strategies()
         else:
             print("🤖 Strategy Agent is disabled in config.py")
         
         print(f"🤖 Moon Dev's Strategy Agent initialized with {len(self.enabled_strategies)} strategies!")
+
+    def _load_strategies(self):
+        """Auto-discover strategy classes in src/strategies/custom/."""
+        import importlib
+        from pathlib import Path
+
+        custom_dir = Path("src/strategies/custom")
+        if not custom_dir.exists():
+            cprint("⚠️ No src/strategies/custom/ directory found", "yellow")
+            return
+
+        for py_file in sorted(custom_dir.glob("*_strategy.py")):
+            if py_file.name.startswith("_"):
+                continue
+            module_path = str(py_file).replace("/", ".").replace("\\", ".").replace(".py", "")
+            try:
+                mod = importlib.import_module(module_path)
+                # Find the strategy class — look for a class with an analyze() method
+                for attr_name in dir(mod):
+                    cls = getattr(mod, attr_name)
+                    if (isinstance(cls, type)
+                            and hasattr(cls, 'analyze')
+                            and attr_name != 'BaseStrategy'
+                            and not attr_name.startswith('_')):
+                        instance = cls()
+                        self.enabled_strategies.append(instance)
+                        cprint(f"  Loaded strategy: {instance.name} ({py_file.name})", "green")
+                        break
+            except Exception as e:
+                cprint(f"  Failed to load {py_file.name}: {e}", "yellow")
+
+        if not self.enabled_strategies:
+            cprint("⚠️ No strategies loaded! Check src/strategies/custom/", "yellow")
+        else:
+            cprint(f"✅ Loaded {len(self.enabled_strategies)} strategies", "green")
 
     def evaluate_signals(self, signals, market_data):
         """Have LLM evaluate strategy signals"""

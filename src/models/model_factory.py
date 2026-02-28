@@ -6,6 +6,13 @@ This module manages all available AI models and provides a unified interface.
 """
 
 import os
+import sys
+
+# Fix Windows console encoding for emoji/unicode output
+if sys.platform == 'win32':
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+
 from typing import Dict, Optional, Type
 from termcolor import cprint
 from dotenv import load_dotenv
@@ -20,6 +27,7 @@ from .ollama_model import OllamaModel
 from .xai_model import XAIModel
 from .openrouter_model import OpenRouterModel  # 🌙 Moon Dev: OpenRouter - access to 200+ models!
 from .moondev_model import MoonDevModel        # 🌙 Moon Dev: AI Chat API — same key as data layer!
+from .blackbox_model import BlackboxModel      # 🌙 Moon Dev: Blackbox AI Cloud — multi-agent coding!
 import random
 
 class ModelFactory:
@@ -36,6 +44,7 @@ class ModelFactory:
         "xai":       XAIModel,          # xAI Grok models
         "openrouter": OpenRouterModel,  # 🌙 Moon Dev: OpenRouter - 200+ models!
         "moondev":   MoonDevModel,      # 🌙 Moon Dev: AI Chat API (same key as data layer)
+        "blackbox":  BlackboxModel,     # 🌙 Moon Dev: Blackbox AI Cloud (multi-agent coding)
     }
 
     # Default models for each type
@@ -49,6 +58,7 @@ class ModelFactory:
         "xai":        "grok-4-fast-reasoning",        # xAI's Grok 4 Fast with reasoning
         "openrouter": "google/gemini-2.5-flash",      # 🌙 Moon Dev: OpenRouter default
         "moondev":    "gpt-4o-mini",                  # 🌙 Moon Dev: cheap & fast (no extra key!)
+        "blackbox":   "blackboxai/blackbox-pro",      # 🌙 Moon Dev: Blackbox Pro (flagship)
     }
     
     def __init__(self):
@@ -73,7 +83,7 @@ class ModelFactory:
         
         # Debug current environment without exposing values
         cprint("\n🔍 Environment Check:", "cyan")
-        for key in ["GROQ_API_KEY", "OPENAI_KEY", "ANTHROPIC_KEY", "DEEPSEEK_KEY", "GROK_API_KEY", "GEMINI_KEY", "OPENROUTER_API_KEY"]:
+        for key in ["GROQ_API_KEY", "OPENAI_KEY", "ANTHROPIC_KEY", "DEEPSEEK_KEY", "GROK_API_KEY", "GEMINI_KEY", "OPENROUTER_API_KEY", "BLACKBOX_CHAT_KEY"]:
             value = os.getenv(key)
             if value and len(value.strip()) > 0:
                 cprint(f"  ├─ {key}: Found ({len(value)} chars)", "green")
@@ -222,6 +232,7 @@ class ModelFactory:
             "xai":        "GROK_API_KEY",        # Grok/xAI uses GROK_API_KEY
             "openrouter": "OPENROUTER_API_KEY",  # 🌙 Moon Dev: OpenRouter - 200+ models!
             "moondev":    "MOONDEV_API_KEY",     # 🌙 Moon Dev: same key as data layer!
+            "blackbox":   "BLACKBOX_CHAT_KEY",   # 🌙 Moon Dev: Blackbox chat API (sk-xxxx)
             # Ollama doesn't need an API key as it runs locally
         }
     
